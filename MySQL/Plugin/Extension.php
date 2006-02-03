@@ -26,19 +26,6 @@
 
 require_once "CodeGen/MySQL/Extension.php";
 
-require_once "System.php";
-    
-require_once "CodeGen/Element.php";
-require_once "CodeGen/MySQL/Plugin/Element/Function.php";
-
-require_once "CodeGen/Maintainer.php";
-
-require_once "CodeGen/License.php";
-
-require_once "CodeGen/Tools/Platform.php";
-
-require_once "CodeGen/Tools/Indent.php";
-
 // }}} 
 
 /**
@@ -72,7 +59,7 @@ class CodeGen_MySQL_Plugin_Extension
     */
     static function copyright()
     {
-        return "Copyright (c) 2003-2005 Hartmut Holzgraefe";
+        return "Copyright (c) 2006 Hartmut Holzgraefe";
     }
 
     // {{{ member variables    
@@ -93,27 +80,6 @@ class CodeGen_MySQL_Plugin_Extension
     
     // }}} 
     
-    // {{{ member adding functions
-    
-    /**
-     * Add a function to the extension
-     *
-     * @param  object   a function object
-     */
-    function addFunction(CodeGen_Mysql_UDF_Element_Function $function)
-    {
-        $name = $function->getName();
-
-        if (isset($this->functions[$name])) {
-            return PEAR::raiseError("public function '$name' has been defined before");
-        }
-        $this->functions[$name] = $function;
-        return true;
-    }
-
-
-    // }}} 
-
     // {{{ output generation
         
     // {{{   docbook documentation
@@ -127,7 +93,7 @@ class CodeGen_MySQL_Plugin_Extension
      */
     function writeHeaderFile() 
     {
-        $filename = "udf_{$this->name}.h";
+        $filename = "myplugin_{$this->name}.h";
         
         $this->addPackageFile('header', $filename); 
 
@@ -136,52 +102,10 @@ class CodeGen_MySQL_Plugin_Extension
         $upname = strtoupper($this->name);
         
         echo $this->getLicense();
-        echo "#ifndef UDF_{$upname}_H\n";
-        echo "#define UDF_{$upname}_H\n\n";   
-?>        
+        echo "#ifndef MYPLUGIN_{$upname}_H\n";
+        echo "#define MYPLUGIN_{$upname}_H\n\n";   
 
-#define RETURN_NULL          { *is_null = 1; DBUG_RETURN(0); }
-
-#define RETURN_INT(x)        { *is_null = 0; DBUG_RETURN(x); }
-
-#define RETURN_REAL(x)       { *is_null = 0; DBUG_RETURN(x); }
-
-#define RETURN_STRINGL(s, l) { \
-  if (s == NULL) { \
-    *is_null = 1; \
-    DBUG_RETURN(NULL); \
-  } \
-  *is_null = 0; \
-  *length = l; \
-  if (l < 255) { \
-    memcpy(result, s, l); \
-    DBUG_RETURN(result); \
-  } \
-  if (l > data->_resultbuf_len) { \
-    data->_resultbuf = realloc(data->_resultbuf, l); \
-    if (!data->_resultbuf) { \
-      *error = 1; \
-      DBUG_RETURN(NULL); \
-    } \
-    data->_resultbuf_len = l; \
-  } \
-  memcpy(data->_resultbuf, s, l); \
-  DBUG_RETURN(data->_resultbuf); \
-}
-
-#define RETURN_STRING(s) { \
-  if (s == NULL) { \
-    *is_null = 1; \
-    DBUG_RETURN(NULL); \
-  } \
-  RETURN_STRINGL(s, strlen(s)); \
-}
-
-#define RETURN_DATETIME(d)   { *length = my_datetime_to_str(d, result); *is_null = 0; DBUG_RETURN(result); }
-
-
-<?php
-        echo "#endif /* UDF_{$upname}_H */\n\n";
+        echo "#endif /* MYPLUGIN_{$upname}_H */\n\n";
 
         return $file->write();
     }
@@ -208,97 +132,7 @@ class CodeGen_MySQL_Plugin_Extension
 
         echo $this->getLicense();
 
-        echo "// {{{ CREATE and DROP statements for this UDF\n\n";
-        echo "/*\n";
-        echo  "register the functions provided by this UDF module using\n";
-        foreach ($this->functions as $function) {
-            echo $function->createStatement($this)."\n";
-        }
-        echo  "\n";        
-        echo  "unregister the functions provided by this UDF module using\n";        
-        foreach ($this->functions as $function) {
-            echo $function->dropStatement($this)."\n";
-        }
-        echo "*/\n// }}}\n\n";
-        
-        
-            
-        echo 
-"// {{{ standard header stuff
-#ifdef STANDARD
-#include <stdio.h>
-#include <string.h>
-#ifdef __WIN__
-typedef unsigned __int64 ulonglong; /* Microsofts 64 bit types */
-typedef __int64 longlong;
-#else
-typedef unsigned long long ulonglong;
-typedef long long longlong;
-#endif /*__WIN__*/
-#else
-#include <my_global.h>
-#include <my_sys.h>
-#endif
-#include <mysql.h>
-#include <m_ctype.h>
-#include <m_string.h>       // To get strmov()
-
-// }}}
-
-";
-
-        echo "#ifdef HAVE_DLOPEN\n\n";
-
-        echo "#include \"udf_{$this->name}.h\"\n\n";
-
-        if (isset($this->code['header']['top'])) {
-            echo "// {{{ user defined header code\n\n";
-            foreach ($this->code['header']['top'] as $code) {
-                echo CodeGen_Tools_Indent::indent(4, $code);
-            }
-            echo "// }}} \n\n";
-        }
-
-
-        echo "// {{{ prototypes\n\n";
-        
-        echo "#ifdef  __cplusplus\n";
-        echo "extern \"C\" {\n";
-        echo "#endif\n";
-
-        foreach ($this->functions as $function) {
-            echo $function->cPrototype();
-        }
-
-        echo "#ifdef  __cplusplus\n";
-        echo "}\n";
-        echo "#endif\n";
-
-        echo "// }}}\n\n";
-
-
-        echo "// {{{ UDF functions\n\n";
-        foreach ($this->functions as $function) {
-            echo "// {{{ ".$function->signature()."\n";
-            echo $function->cData($this);
-            echo $function->cCode($this);
-            echo "// }}}\n\n";
-        }        
-        echo "// }}}\n\n";
-
-        if (isset($this->code['header']['bottom'])) {
-            echo "// {{{ user defined header code\n\n";
-            foreach ($this->code['header']['bottom'] as $code) {
-                echo CodeGen_Tools_Indent::indent(4, $code);
-            }
-            echo "// }}} \n\n";
-        }
-
-        echo "#else\n";
-        echo "#error your installation does not support loading UDFs\n";
-        echo "#endif /* HAVE_DLOPEN */\n";
-
-        echo CodeGen_Element::cCodeEditorSettings();
+        echo CodeGent::cCodeEditorSettings();
 
         return $file->write();
     }
@@ -316,7 +150,7 @@ typedef long long longlong;
         $file = new CodeGen_Tools_Outbuf($this->dirpath."/README");
 
 ?>
-This is a standalone UDF extension created using CodeGen_Mysql_UDF <?php echo self::version(); ?>
+This is a MySQL plugin generetad using CodeGen_Mysql_Plugin <?php echo self::version(); ?>
 
 ...
 <?php
@@ -335,7 +169,7 @@ This is a standalone UDF extension created using CodeGen_Mysql_UDF <?php echo se
         $file = new CodeGen_Tools_Outbuf($this->dirpath."/INSTALL");
 
 ?>
-This is a standalone UDF extension created using CodeGen_Mysql_UDF <?php echo self::version(); ?>
+This is a MySQL plugin generetad using CodeGen_Mysql_Plugin <?php echo self::version(); ?>
 
 ...
 <?php
