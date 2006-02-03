@@ -132,7 +132,7 @@ class CodeGen_MySQL_Plugin_Extension
 
         echo $this->getLicense();
 
-        echo CodeGent::cCodeEditorSettings();
+        echo $this->cCodeEditorSettings();
 
         return $file->write();
     }
