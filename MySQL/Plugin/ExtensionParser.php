@@ -27,6 +27,7 @@ require_once "CodeGen/MySQL/ExtensionParser.php";
 require_once "CodeGen/Maintainer.php";
 require_once "CodeGen/Tools/Indent.php";
 
+
 /**
  * A class that generates MySQL Plugin soure and documenation files
  *
@@ -46,10 +47,75 @@ class CodeGen_MySQL_Plugin_ExtensionParser
         return $this->tagstart_extension($attr);
     }
     
-    
-    function tagend_udf_code($attr, $data) {
+    function tagend_plugin_code($attr, $data) {
         return $this->tagend_extension_code($attr, $data);
     }
+
+
+    //     _____      _ _ _            _   
+    //    |  ___|   _| | | |_ _____  _| |_ 
+    //    | |_ | | | | | | __/ _ \ \/ / __|
+    //    |  _|| |_| | | | ||  __/>  <| |_ 
+    //    |_|   \__,_|_|_|\__\___/_/\_\\__|
+
+
+    function tagstart_plugin_fulltext($attr)
+    {
+        $this->checkAttributes($attr, array(), array("name"));
+
+        $this->pushHelper(new CodeGen_Mysql_Plugin_Element_Fulltext);
+        $this->helper->setName($attr["name"]);
+    }
+
+    function tagend_plugin_fulltext($attr, $data)
+    {
+        $err = $this->extension->addPlugin($this->helper);
+
+        $this->popHelper();
+        return $err;        
+    }
+
+    function tagend_fulltext_init($attr, $data)
+    {
+        return $this->helper->setInitCode($data);
+    }
+
+    function tagend_fulltext_deinit($attr, $data)
+    {
+        return $this->helper->setDeinitCode($data);
+    }
+
+    function tagend_fulltext_parser($attr, $attr)
+    {
+        return true;
+    }
+
+    function tagend_fulltext_parser_code($attr, $data)
+    {
+        return $this->helper->setParserCode($data);
+    }
+
+    function tagend_fulltext_parser_init($attr, $data)
+    {
+        return $this->helper->setParserInit($data);
+    }
+
+    function tagend_fulltext_parser_deinit($attr, $data)
+    {
+        return $this->helper->setParserDeinit($data);
+    }
+
+
+
+    //    ____  _                             
+    //   / ___|| |_ ___  _ __ __ _  __ _  ___ 
+    //   \___ \| __/ _ \| '__/ _` |/ _` |/ _ \
+    //    ___) | || (_) | | | (_| | (_| |  __/
+    //   |____/ \__\___/|_|  \__,_|\__, |\___|
+    //                             |___/      
+
+
+
 }
 
 

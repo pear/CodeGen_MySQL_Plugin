@@ -1,3 +1,10 @@
 <?xml version="1.0"?>
 <plugin name="minimal">
+ <fulltext name="dummy">
+  <parser>
+   <code>
+    return param->mysql_parse(param->mysql_ftparam, param->doc, param-&gt;length);
+   </code>
+  </parser>
+ </fulltext>
 </plugin>

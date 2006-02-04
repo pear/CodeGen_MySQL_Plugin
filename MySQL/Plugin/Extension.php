@@ -26,6 +26,9 @@
 
 require_once "CodeGen/MySQL/Extension.php";
 
+require_once "CodeGen/MySQL/Plugin/Element.php";
+require_once "CodeGen/MySQL/Plugin/Element/Fulltext.php";
+
 // }}} 
 
 /**
@@ -63,6 +66,13 @@ class CodeGen_MySQL_Plugin_Extension
     }
 
     // {{{ member variables    
+
+    /**
+     * Plugins defined by this extension
+     *
+     * @type array
+     */
+    protected $plugins = array();
 
     // }}} 
 
@@ -123,14 +133,30 @@ class CodeGen_MySQL_Plugin_Extension
      */
     function writeCodeFile() {
         $filename = "{$this->name}.".$this->language;  
+        $upname   = strtoupper($this->name);
+        $lowname  = strtolower($this->name);
 
         $this->addPackageFile('c', $filename); 
 
         $file =  new CodeGen_Tools_Outbuf($this->dirpath."/".$filename);
         
-        $upname = strtoupper($this->name);
-
         echo $this->getLicense();
+
+        echo "
+#include <my_global.h>
+#include <m_string.h>
+#include <m_ctype.h>
+#include <plugin.h>
+";
+        
+        $declarations = array();
+        foreach ($this->plugins as $plugin) {
+            echo $plugin->getPluginCode()."\n";
+            $declarations[] = trim($plugin->getPluginRegistration($this));
+        }
+        echo "\n\nmysql_declare_plugin\n";
+        echo join(",\n", $declarations)."\n";
+        echo "mysql_declare_plugin_end;\n\n";
 
         echo $this->cCodeEditorSettings();
 
@@ -177,6 +203,16 @@ This is a MySQL plugin generetad using CodeGen_Mysql_Plugin <?php echo self::ver
         $file->write();
     }
 
+
+    /**
+     * Add a plugin to the extension
+     * 
+     * @param object the plugin to add
+     */
+    function addPlugin(CodeGen_MySQL_Plugin_Element $plugin)
+    {
+        $this->plugins[$plugin->getName()] = $plugin;
+    }
 
 
 }   
