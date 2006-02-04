@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+          "../../phpdoc/dtds/dbxml-4.1.2/docbookx.dtd" [
+]>
+	 
+<book>
+ <title><literal>CodeGen_MySQL_Plugin</literal> - the MySQL Plugin code generator</title>
+
+</book>
