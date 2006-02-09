@@ -53,6 +53,7 @@ is a code generator for MySQL User Defined Function (UDF)
             <file role="php">ExtensionParser.php</file>
             <dir name="Element"> 
               <file role="php">Fulltext.php</file>
+              <file role="php">Storage.php</file>
             </dir>
           </dir>
         </dir>

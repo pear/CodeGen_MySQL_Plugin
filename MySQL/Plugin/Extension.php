@@ -28,6 +28,7 @@ require_once "CodeGen/MySQL/Extension.php";
 
 require_once "CodeGen/MySQL/Plugin/Element.php";
 require_once "CodeGen/MySQL/Plugin/Element/Fulltext.php";
+require_once "CodeGen/MySQL/Plugin/Element/Storage.php";
 
 // }}} 
 

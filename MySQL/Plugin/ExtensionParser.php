@@ -113,9 +113,32 @@ class CodeGen_MySQL_Plugin_ExtensionParser
     //    ___) | || (_) | | | (_| | (_| |  __/
     //   |____/ \__\___/|_|  \__,_|\__, |\___|
     //                             |___/      
+        
+    function tagstart_plugin_storage($attr)
+    {
+        $this->checkAttributes($attr, array(), array("name"));
 
+        $this->pushHelper(new CodeGen_Mysql_Plugin_Element_Storage);
+        $this->helper->setName($attr["name"]);
+    }
 
+    function tagend_plugin_storage($attr, $data)
+    {
+        $err = $this->extension->addPlugin($this->helper);
 
+        $this->popHelper();
+        return $err;        
+    }
+
+    function tagend_storage_init($attr, $data)
+    {
+        return $this->helper->setInitCode($data);
+    }
+
+    function tagend_storage_deinit($attr, $data)
+    {
+        return $this->helper->setDeinitCode($data);
+    }
 }
 
 
