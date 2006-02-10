@@ -87,6 +87,8 @@ class CodeGen_MySQL_Plugin_Extension
     function __construct() 
     {
         parent::__construct();
+
+        $this->addConfigFragment("MYSQL_USE_PLUGIN_API()", "bottom");
     }
     
     // }}} 
@@ -144,10 +146,10 @@ class CodeGen_MySQL_Plugin_Extension
         echo $this->getLicense();
 
         echo "
-#include <my_global.h>
-#include <m_string.h>
-#include <m_ctype.h>
-#include <plugin.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <mysql/plugin.h>
 ";
         
         $declarations = array();
