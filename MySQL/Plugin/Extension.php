@@ -88,6 +88,16 @@ class CodeGen_MySQL_Plugin_Extension
     {
         parent::__construct();
 
+        $this->addConfigFragment("WITH_MYSQL_SRC()", "bottom");
+
+        $requiresSource = false;
+        foreach ($this->plugins as $plugin) {
+            $requiresSource |= $plugin->getRequiresSource();
+        }
+        if (!$requiresSource) {
+            $this->addConfigFragment("WITH_MYSQL()", "bottom");
+        }
+
         $this->addConfigFragment("MYSQL_USE_PLUGIN_API()", "bottom");
     }
     
