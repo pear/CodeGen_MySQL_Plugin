@@ -63,8 +63,8 @@ abstract class CodeGen_MySQL_Plugin_Element
      */
     function __construct()
     {
- 	  $this->setInitCode("return 0;");
-	  $this->setDeinitCode("return 0;");
+      $this->setInitCode("return 0;");
+      $this->setDeinitCode("return 0;");
       $this->setSummary("no summary given");
     }
 
@@ -79,12 +79,12 @@ abstract class CodeGen_MySQL_Plugin_Element
         if (!self::isName($name)) {
             return PEAR::raiseError("'$name' is not a valid plugin name");
         }
-	
+    
         // keywords are not allowed as function names
         if (self::isKeyword($name)) {
             return PEAR::raiseError("'$name' is a reserved word which is not valid for plugin names");
         }
-	
+    
         return parent::setName($name);
     }
 

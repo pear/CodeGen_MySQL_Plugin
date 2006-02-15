@@ -64,90 +64,90 @@ class CodeGen_MySQL_Plugin_Element_Fulltext
     */
     protected $parserCode;
 
-	/** 
-	 * Do we require MySQL source or can we do with public headers only?
-	 *
-	 * @var bool
-	 */
-	protected $requiresSource = false;
+    /** 
+     * Do we require MySQL source or can we do with public headers only?
+     *
+     * @var bool
+     */
+    protected $requiresSource = false;
 
-	/**
-	 * requiresSource getter
-	 *
-	 * @return bool
-	 */
-	function getRequiresSource()
-	{
-	  return $this->requiresSource;
-	}
-
-
-	/**
-	 * Constructor
-	 */
-	function __construct()
-	{
-	  parent::__construct();
- 	  $this->setInitParser("return 0;");
-	  $this->setDeinitParser("return 0;");
-
-	  // default: just use the real thing
-	  $this->setParserCode("return param->mysql_parse(param->mysql_ftparam, param->doc, param->length);");
-	}
-	
     /**
-	 * Parser Init Code setter
-	 *
-	 * @param  string  code snippet
-	 * @return bool    success status
-	 */
+     * requiresSource getter
+     *
+     * @return bool
+     */
+    function getRequiresSource()
+    {
+      return $this->requiresSource;
+    }
+
+
+    /**
+     * Constructor
+     */
+    function __construct()
+    {
+      parent::__construct();
+      $this->setInitParser("return 0;");
+      $this->setDeinitParser("return 0;");
+
+      // default: just use the real thing
+      $this->setParserCode("return param->mysql_parse(param->mysql_ftparam, param->doc, param->length);");
+    }
+    
+    /**
+     * Parser Init Code setter
+     *
+     * @param  string  code snippet
+     * @return bool    success status
+     */
     function setInitParser($code) 
     {
-	    $this->initParser = $this->indentCode($code);
+        $this->initParser = $this->indentCode($code);
         return true;
     }
 
     /**
-	 * Parser Deinit Code setter
-	 *
-	 * @param  string  code snippet
-	 * @return bool    success status
-	 */
+     * Parser Deinit Code setter
+     *
+     * @param  string  code snippet
+     * @return bool    success status
+     */
     function setDeinitParser($code) 
     {
-	    $this->deinitParser = $this->indentCode($code);
+        $this->deinitParser = $this->indentCode($code);
         return true;
     }
 
     /**
-	 * Parser Code setter
-	 *
-	 * @param  string  code snippet
-	 * @return bool    success status
-	 */
+     * Parser Code setter
+     *
+     * @param  string  code snippet
+     * @return bool    success status
+     */
     function setParserCode($code) 
     {
-	    $this->parserCode = $this->indentCode($code);
+        $this->parserCode = $this->indentCode($code);
         return true;
     }
 
-	/**
-	 * Plugin type specifier is needed for plugin registration
-	 *
-	 * @param  void
-	 * @return string
-	 */
-	function getPluginType() 
-	{
-	  return "MYSQL_FTPARSER_PLUGIN";
-	}
-	
-	
-	function getPluginCode()
-	{
+    /**
+     * Plugin type specifier is needed for plugin registration
+     *
+     * @param  void
+     * @return string
+     */
+    function getPluginType() 
+    {
+      return "MYSQL_FTPARSER_PLUGIN";
+    }
+    
+    
+    function getPluginCode()
+    {
       $name   = $this->name;
-	  
-	  return parent::getPluginCode().
+      
+      return parent::getPluginCode().
 "
 static int {$name}_init(MYSQL_FTPARSER_PARAM *param)
 {   
@@ -174,5 +174,5 @@ static struct st_mysql_ftparser {$name}_descriptor=
 };
 ";
 
-	}
+    }
 }
