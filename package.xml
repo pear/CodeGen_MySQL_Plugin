@@ -49,7 +49,9 @@ is a code generator for MySQL User Defined Function (UDF)
         <dir name="MySQL">
           <dir name="Plugin">
             <file role="php">Element.php</file>
-            <file role="php">Extension.php</file>
+            <file role="php" name="Extension.php">
+              <replace from="@package_version@" to="version" type="package-info" />
+            </file>
             <file role="php">ExtensionParser.php</file>
             <dir name="Element"> 
               <file role="php">Fulltext.php</file>

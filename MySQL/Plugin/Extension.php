@@ -53,7 +53,7 @@ class CodeGen_MySQL_Plugin_Extension
     */
     static function version() 
     {
-        return "0.9.1dev";
+        return "@package_version@";
     }
 
     /**
