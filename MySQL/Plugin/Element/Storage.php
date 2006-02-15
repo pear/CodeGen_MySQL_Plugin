@@ -49,6 +49,7 @@ class CodeGen_MySQL_Plugin_Element_Storage
     function __construct()
     {
       parent::__construct();
+      $this->requiresSource = true;
     }
     
     /**
@@ -57,24 +58,6 @@ class CodeGen_MySQL_Plugin_Element_Storage
      * @var array
      */
     protected $functions = array();
-
-
-    /** 
-     * Do we require MySQL source or can we do with public headers only?
-     *
-     * @var bool
-     */
-    protected $requiresSource = false;
-
-    /**
-     * requiresSource getter
-     *
-     * @return bool
-     */
-    function getRequiresSource()
-    {
-      return $this->requiresSource;
-    }
 
 
     /**

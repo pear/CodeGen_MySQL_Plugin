@@ -58,6 +58,13 @@ abstract class CodeGen_MySQL_Plugin_Element
     */
     protected $deinitCode;
 
+    /** 
+     * Do we require MySQL source or can we do with public headers only?
+     *
+     * @var bool
+     */
+    protected $requiresSource = false;
+
     /**
      * Constructor
      */
@@ -66,6 +73,16 @@ abstract class CodeGen_MySQL_Plugin_Element
       $this->setInitCode("return 0;");
       $this->setDeinitCode("return 0;");
       $this->setSummary("no summary given");
+    }
+
+    /**
+     * requiresSource getter
+     *
+     * @return bool
+     */
+    function getRequiresSource()
+    {
+      return $this->requiresSource;
     }
 
     /**

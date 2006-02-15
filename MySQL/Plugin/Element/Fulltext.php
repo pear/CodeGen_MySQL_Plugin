@@ -64,24 +64,6 @@ class CodeGen_MySQL_Plugin_Element_Fulltext
     */
     protected $parserCode;
 
-    /** 
-     * Do we require MySQL source or can we do with public headers only?
-     *
-     * @var bool
-     */
-    protected $requiresSource = false;
-
-    /**
-     * requiresSource getter
-     *
-     * @return bool
-     */
-    function getRequiresSource()
-    {
-      return $this->requiresSource;
-    }
-
-
     /**
      * Constructor
      */
