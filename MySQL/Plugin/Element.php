@@ -152,6 +152,8 @@ abstract class CodeGen_MySQL_Plugin_Element
         $version = 1;
 
         return "
+
+mysql_declare_plugin($name)
 {
   $type,
   &{$name}_descriptor, 
@@ -163,6 +165,7 @@ abstract class CodeGen_MySQL_Plugin_Element
   $version,
   NULL
 }
+mysql_declare_plugin_end;
 ";
     }
 
