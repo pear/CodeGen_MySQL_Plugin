@@ -24,8 +24,6 @@
  * includes
  */
 require_once "CodeGen/MySQL/ExtensionParser.php";
-require_once "CodeGen/Maintainer.php";
-require_once "CodeGen/Tools/Indent.php";
 
 
 /**
