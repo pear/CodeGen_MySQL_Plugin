@@ -165,11 +165,8 @@ class CodeGen_MySQL_Plugin_Extension
         $declarations = array();
         foreach ($this->plugins as $plugin) {
             echo $plugin->getPluginCode()."\n";
-            $declarations[] = trim($plugin->getPluginRegistration($this));
+            echo $plugin->getPluginRegistration($this);
         }
-        echo "\n\nmysql_declare_plugin\n";
-        echo join(",\n", $declarations)."\n";
-        echo "mysql_declare_plugin_end;\n\n";
 
         echo $this->cCodeEditorSettings();
 
