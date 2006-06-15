@@ -99,6 +99,8 @@ class CodeGen_MySQL_Plugin_Extension
         }
 
         $this->addConfigFragment("MYSQL_USE_PLUGIN_API()", "bottom");
+
+        $this->libdir = "@MYSQL_PLUGIN_DIR@";
     }
     
     // }}} 
