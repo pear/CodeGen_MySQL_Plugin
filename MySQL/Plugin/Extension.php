@@ -51,7 +51,7 @@ class CodeGen_MySQL_Plugin_Extension
     * 
     * @return string
     */
-    static function version() 
+    function version() 
     {
         return "@package_version@";
     }
@@ -61,7 +61,7 @@ class CodeGen_MySQL_Plugin_Extension
     *
     * @return string
     */
-    static function copyright()
+    function copyright()
     {
         return "Copyright (c) 2006 Hartmut Holzgraefe";
     }
