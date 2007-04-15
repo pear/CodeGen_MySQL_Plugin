@@ -148,8 +148,20 @@ abstract class CodeGen_MySQL_Plugin_Element
         $name    = $this->name;
         $type    = $this->getPluginType();
         $desc    = $this->summary;
-        $author  = "TODO";
-        $version = 1;
+
+        $authors = array();
+        foreach ($ext->getAuthors() as $author) {
+            $authors[] = $author->getName();
+        }
+        $authors = join(", ", $authors);
+
+        $license = "PLUGIN_LICENSE_GPL";
+
+        $version = explode(".", $ext->getRelease()->getVersion());
+        if (!isset($version[1])) {
+            $version[1] = 0;
+        }
+        $version = "0x".sprintf("%02d", $version[0]).sprintf("%02d", $version[1]);
 
         return "
 
@@ -158,12 +170,15 @@ mysql_declare_plugin($name)
   $type,
   &{$name}_descriptor, 
   \"$name\",
-  \"$author\",
+  \"$authors\",
   \"$desc\",
+  $license,
   {$name}_plugin_init,
   {$name}_plugin_deinit,
   $version,
-  NULL
+  NULL,                       /* status variables                */
+  NULL,                       /* system variables                */
+  NULL                        /* config options                  */
 }
 mysql_declare_plugin_end;
 ";
