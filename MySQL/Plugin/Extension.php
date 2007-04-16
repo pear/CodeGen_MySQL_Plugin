@@ -126,7 +126,7 @@ class CodeGen_MySQL_Plugin_Extension
         
         $upname = strtoupper($this->name);
         
-        echo $this->getLicense();
+        echo $this->getLicenseComment();
         echo "#ifndef MYPLUGIN_{$upname}_H\n";
         echo "#define MYPLUGIN_{$upname}_H\n\n";   
 
@@ -155,7 +155,7 @@ class CodeGen_MySQL_Plugin_Extension
 
         $file =  new CodeGen_Tools_Outbuf($this->dirpath."/".$filename);
         
-        echo $this->getLicense();
+        echo $this->getLicenseComment();
 
         echo "
 #include <stdlib.h>
