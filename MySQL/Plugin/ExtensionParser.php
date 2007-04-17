@@ -25,7 +25,6 @@
  */
 require_once "CodeGen/MySQL/ExtensionParser.php";
 
-
 /**
  * A class that generates MySQL Plugin soure and documenation files
  *
@@ -40,6 +39,100 @@ require_once "CodeGen/MySQL/ExtensionParser.php";
 class CodeGen_MySQL_Plugin_ExtensionParser 
     extends CodeGen_MySQL_ExtensionParser
 {
+    //   ____                      _        _                  
+    //  / ___| ___ _ __   ___ _ __(_) ___  | |_ __ _  __ _ ___ 
+    // | |  _ / _ \ '_ \ / _ \ '__| |/ __| | __/ _` |/ _` / __|
+    // | |_| |  __/ | | |  __/ |  | | (__  | || (_| | (_| \__ \
+    //  \____|\___|_| |_|\___|_|  |_|\___|  \__\__,_|\__, |___/
+    //                                               |___/     
+    
+    function start_generic_plugin($classname, $attr)
+    {
+        $this->checkAttributes($attr, array(), array("name"));
+
+        $classname = "CodeGen_Mysql_Plugin_Element_".$classname;
+
+        $this->pushHelper(new $classname);
+        $this->helper->setName($attr["name"]);
+    }
+
+    function end_generic_plugin($attr, $data)
+    {
+        $err = $this->extension->addPlugin($this->helper);
+
+        $this->popHelper();
+        return $err;        
+    }
+
+    function end_generic_init($attr, $data)
+    {
+        return $this->helper->setInitCode($data);
+    }
+
+    function end_generic_deinit($attr, $data)
+    {
+        return $this->helper->setDeinitCode($data);
+    }
+
+    function start_generic_statusvar($attr)
+    {
+        $err = $this->checkAttributes($attr, array("type", "name", "value", "init"));
+        if (PEAR::isError($err)) {
+            return $err;
+        }
+        
+        if (!isset($attr["type"])) {
+            return PEAR::raiseError("type attribut for fulltext plugin missing");
+        }
+        if (!isset($attr["name"])) {
+            return PEAR::raiseError("name attribut for fulltext plugin missing");
+        }
+        if (!isset($attr["value"])) {
+            $attr["value"] = $attr["name"];
+        }
+        if (!isset($attr["init"])) {
+            $attr["init"] = false;
+        }
+
+        $err = CodeGen_MySQL_Plugin_Element_StatusVariable::isName($attr["name"]);
+        if ($err !== true) {
+            return PEAR::raiseError("'$name' is not a valid status variable name");
+        }
+
+        $err = CodeGen_MySQL_Plugin_Element_StatusVariable::isValidType($attr["type"]);
+        if ($err !== true) {
+            return $err;
+        }
+
+        if (!isset($attr["value"])) {
+            $attr["value"] = $attr["name"];
+        }
+
+        $var = new CodeGen_MySQL_Plugin_Element_StatusVariable($attr['type'], $attr['name'], $attr['value'], $attr['init']);
+
+        return $this->pushHelper($var);
+    }
+
+    function end_generic_statusvar($attr)
+    {
+        $var = $this->helper;
+        $this->popHelper();
+        return $this->helper->addStatusVariable($var);
+    }
+
+    function end_generic_summary($attr, $data)
+    {
+        return $this->helper->setSummary($data);
+    }
+
+
+    //  ____  _             _         _                  
+    // |  _ \| |_   _  __ _(_)_ __   | |_ __ _  __ _ ___ 
+    // | |_) | | | | |/ _` | | '_ \  | __/ _` |/ _` / __|
+    // |  __/| | |_| | (_| | | | | | | || (_| | (_| \__  \
+    // |_|   |_|\__,_|\__, |_|_| |_|  \__\__,_|\__, |___/
+    //                |___/                    |___/     
+
     function tagstart_plugin($attr) 
     {
         return $this->tagstart_extension($attr);
@@ -47,6 +140,58 @@ class CodeGen_MySQL_Plugin_ExtensionParser
     
     function tagend_plugin_code($attr, $data) {
         return $this->tagend_extension_code($attr, $data);
+    }
+
+    function tagstart_statusvar_statusvar($attr) {
+        return $this->start_generic_statusvar($attr);
+    }
+
+    function tagend_statusvar_statusvar($attr, $data) {
+        return $this->end_generic_statusvar($attr, $data);
+    }
+
+    //     ____                                   
+    //    |  _ \  __ _  ___ _ __ ___   ___  _ __  
+    //    | | | |/ _` |/ _ \ '_ ` _ \ / _ \| '_ \ 
+    //    | |_| | (_| |  __/ | | | | | (_) | | | |
+    //    |____/ \__,_|\___|_| |_| |_|\___/|_| |_|
+
+    
+    // default plugin tags
+
+    function tagstart_plugin_daemon($attr)
+    {
+        return $this->start_generic_plugin("Daemon", $attr);
+    }
+
+    function tagend_plugin_daemon($attr, $data)
+    {
+        return $this->end_generic_plugin($attr, $data);
+    }
+
+    function tagend_daemon_init($attr, $data)
+    {
+        return $this->end_generic_init($attr, $data);
+    }
+
+    function tagend_daemon_deinit($attr, $data)
+    {
+        return $this->end_generic_deinit($attr, $data);
+    }
+
+    function tagstart_daemon_statusvar($attr)
+    {
+        return $this->start_generic_statusvar($attr);
+    }
+
+    function tagend_daemon_statusvar($attr, $data)
+    {
+        return $this->end_generic_statusvar($attr, $data);
+    }
+
+    function tagend_daemon_summary($attr, $data)
+    {
+        return $this->end_generic_summary($attr, $data);
     }
 
 
@@ -57,33 +202,46 @@ class CodeGen_MySQL_Plugin_ExtensionParser
     //    |_|   \__,_|_|_|\__\___/_/\_\\__|
 
 
+    // default plugin tags
+
     function tagstart_plugin_fulltext($attr)
     {
-        $this->checkAttributes($attr, array(), array("name"));
-
-        $this->pushHelper(new CodeGen_Mysql_Plugin_Element_Fulltext);
-        $this->helper->setName($attr["name"]);
+        return $this->start_generic_plugin("Fulltext", $attr);
     }
 
     function tagend_plugin_fulltext($attr, $data)
     {
-        $err = $this->extension->addPlugin($this->helper);
-
-        $this->popHelper();
-        return $err;        
+        return $this->end_generic_plugin($attr, $data);
     }
 
     function tagend_fulltext_init($attr, $data)
     {
-        return $this->helper->setInitCode($data);
+        return $this->end_generic_init($attr, $data);
     }
 
     function tagend_fulltext_deinit($attr, $data)
     {
-        return $this->helper->setDeinitCode($data);
+        return $this->end_generic_deinit($attr, $data);
     }
 
-    function tagend_fulltext_parser($attr, $attr)
+    function tagstart_fulltext_statusvar($attr)
+    {
+        return $this->start_generic_statusvar($attr);
+    }
+
+    function tagend_fulltext_statusvar($attr, $data)
+    {
+        return $this->end_generic_statusvar($attr, $data);
+    }
+
+    function tagend_fulltext_summary($attr, $data)
+    {
+        return $this->end_generic_summary($attr, $data);
+    }
+
+    // plugin specific tags
+
+    function tagend_fulltext_parser($attr, $data)
     {
         return true;
     }
@@ -112,31 +270,86 @@ class CodeGen_MySQL_Plugin_ExtensionParser
     //   |____/ \__\___/|_|  \__,_|\__, |\___|
     //                             |___/      
         
+    // default plugin tags
+
     function tagstart_plugin_storage($attr)
     {
-        $this->checkAttributes($attr, array(), array("name"));
-
-        $this->pushHelper(new CodeGen_Mysql_Plugin_Element_Storage);
-        $this->helper->setName($attr["name"]);
+        return $this->start_generic_plugin("Storage", $attr);
     }
 
     function tagend_plugin_storage($attr, $data)
     {
-        $err = $this->extension->addPlugin($this->helper);
-
-        $this->popHelper();
-        return $err;        
+        return $this->end_generic_plugin($attr, $data);
     }
 
     function tagend_storage_init($attr, $data)
     {
-        return $this->helper->setInitCode($data);
+        return $this->end_generic_init($attr, $data);
     }
 
     function tagend_storage_deinit($attr, $data)
     {
-        return $this->helper->setDeinitCode($data);
+        return $this->end_generic_deinit($attr, $data);
     }
+
+    function tagstart_storage_statusvar($attr)
+    {
+        return $this->start_generic_statusvar($attr);
+    }
+
+    function tagend_storage_statusvar($attr, $data)
+    {
+        return $this->end_generic_statusvar($attr, $data);
+    }
+
+    function tagend_storage_summary($attr, $data)
+    {
+        return $this->end_generic_summary($attr, $data);
+    }
+
+    //  ___        __          ____       _                          
+    // |_ _|_ __  / _| ___    / ___|  ___| |__   ___ _ __ ___   __ _ 
+    //  | || '_ \| |_ / _ \   \___ \ / __| '_ \ / _ \ '_ ` _ \ / _` |
+    //  | || | | |  _| (_) |   ___) | (__| | | |  __/ | | | | | (_| |
+    // |___|_| |_|_|  \___(_) |____/ \___|_| |_|\___|_| |_| |_|\__,_|
+ 
+    // default plugin tags
+
+    function tagstart_plugin_infoschema($attr)
+    {
+        return $this->start_generic_plugin("InformationSchema", $attr);
+    }
+
+    function tagend_plugin_infoschema($attr, $data)
+    {
+        return $this->end_generic_plugin($attr, $data);
+    }
+
+    function tagend_infoschema_init($attr, $data)
+    {
+        return $this->end_generic_init($attr, $data);
+    }
+
+    function tagend_infoschema_deinit($attr, $data)
+    {
+        return $this->end_generic_deinit($attr, $data);
+    }
+
+    function tagstart_infoschema_statusvar($attr)
+    {
+        return $this->start_generic_statusvar($attr);
+    }
+
+    function tagend_infoschema_statusvar($attr, $data)
+    {
+        return $this->end_generic_statusvar($attr, $data);
+    }
+
+    function tagend_infoschema_summary($attr, $data)
+    {
+        return $this->end_generic_summary($attr, $data);
+    }
+
 }
 
 
