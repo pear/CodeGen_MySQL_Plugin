@@ -66,6 +66,13 @@ abstract class CodeGen_MySQL_Plugin_Element
     protected $requiresSource = false;
 
     /**
+     * Status variables for this plugin
+     *
+     * @var array
+     */
+    protected $statusVariables = array();
+    
+    /**
      * Constructor
      */
     function __construct()
@@ -129,6 +136,18 @@ abstract class CodeGen_MySQL_Plugin_Element
         return true;
     }
 
+
+    function addStatusVariable($var)
+    {
+        if (isset($this->statusVariables[$var->getName()])) {
+            return PEAR::raiseError("status variable '".$var->getName()."' already defined (x)");
+        }
+
+        $this->statusVariables[$var->getName()] = $var;
+
+        return true;
+    }
+
     /**
      * Plugin type specifier is needed for plugin registration
      *
@@ -151,20 +170,52 @@ abstract class CodeGen_MySQL_Plugin_Element
 
         $authors = array();
         foreach ($ext->getAuthors() as $author) {
-            $authors[] = $author->getName();
+            $author_name = $author->getName();
+            $author_email = $author->getEmail();
+            if (!empty($author_email)) {
+                $author_email = " <".$author_email.">";
+            } 
+            $authors[] = $author_name.$author_email;
         }
         $authors = join(", ", $authors);
 
-        $license = "PLUGIN_LICENSE_GPL";
+        $license = $ext->getLicense();
+        if ($license) {
+            switch ($license->getShortName()) {
+            case 'GPL':
+                $license = "PLUGIN_LICENSE_GPL";
+                break;
+            case 'BSD':
+                $license = "PLUGIN_LICENSE_BSD"; 
+                break;
+            default:
+                $license = "PLUGIN_LICENSE_PROPRIETARY";
+                break;
+            }
+        } else {
+            $license = "PLUGIN_LICENSE_PROPRIETARY";
+        }
 
         $version = explode(".", $ext->getRelease()->getVersion());
         if (!isset($version[1])) {
             $version[1] = 0;
         }
-        $version = "0x".sprintf("%02d", $version[0]).sprintf("%02d", $version[1]);
+        $version = "0x".sprintf("%02d%02d", $version[0], $version[1]);
 
-        return "
+        ob_start();
 
+        foreach ($this->statusVariables as $variable) {
+            echo $variable->getDefinition();
+        }
+        echo "\n\n";
+
+        echo CodeGen_MySQL_Plugin_Element_StatusVariable::startRegistrations($this->name);
+        foreach ($this->statusVariables as $variable) {
+            echo $variable->getRegistration();
+        }
+        echo CodeGen_MySQL_Plugin_Element_StatusVariable::endRegistrations($this->name);
+
+        echo "
 mysql_declare_plugin($name)
 {
   $type,
@@ -176,24 +227,25 @@ mysql_declare_plugin($name)
   {$name}_plugin_init,
   {$name}_plugin_deinit,
   $version,
-  NULL,                       /* status variables                */
-  NULL,                       /* system variables                */
-  NULL                        /* config options                  */
+  {$name}_status_variables,
+  NULL, /* placeholder for system variables, not available yet */
+  NULL, /* placeholder for command line options, not available yet */
 }
 mysql_declare_plugin_end;
 ";
+        return ob_get_clean();
     }
 
 
     function getPluginCode()
     {  
         return "
-static int {$this->name}_plugin_init(void)
+static int {$this->name}_plugin_init(void *data)
 {
 {$this->initCode}
 }
 
-static int {$this->name}_plugin_deinit(void)
+static int {$this->name}_plugin_deinit(void *data)
 {
 {$this->deinitCode}
 }
