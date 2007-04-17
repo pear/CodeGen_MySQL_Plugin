@@ -148,7 +148,7 @@ class CodeGen_MySQL_Plugin_Element_Storage
      * @param  string  handler name
      * @return bool    true for valid handler names, else false
      */
-    function isName($name)
+    static function isName($name)
     {
         return in_array($name, array("close_connection",
                                      "savepoint",
