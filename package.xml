@@ -54,8 +54,11 @@ is a code generator for MySQL User Defined Function (UDF)
             </file>
             <file role="php">ExtensionParser.php</file>
             <dir name="Element"> 
+              <file role="php">Daemon.php</file>
               <file role="php">Fulltext.php</file>
+              <file role="php">InformationSchema.php</file>
               <file role="php">Storage.php</file>
+              <file role="php">StatusVariable.php</file>
             </dir>
           </dir>
         </dir>
