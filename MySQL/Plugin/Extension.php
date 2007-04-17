@@ -27,8 +27,13 @@
 require_once "CodeGen/MySQL/Extension.php";
 
 require_once "CodeGen/MySQL/Plugin/Element.php";
+
+require_once "CodeGen/MySQL/Plugin/Element/StatusVariable.php";
+
 require_once "CodeGen/MySQL/Plugin/Element/Fulltext.php";
 require_once "CodeGen/MySQL/Plugin/Element/Storage.php";
+require_once "CodeGen/MySQL/Plugin/Element/Daemon.php";
+require_once "CodeGen/MySQL/Plugin/Element/InformationSchema.php";
 
 // }}} 
 
@@ -63,7 +68,7 @@ class CodeGen_MySQL_Plugin_Extension
     */
     function copyright()
     {
-        return "Copyright (c) 2006 Hartmut Holzgraefe";
+        return "Copyright (c) 2006, 2007 Hartmut Holzgraefe";
     }
 
     // {{{ member variables    
@@ -161,6 +166,7 @@ class CodeGen_MySQL_Plugin_Extension
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <my_global.h>
 #include <mysql/plugin.h>
 ";
         
