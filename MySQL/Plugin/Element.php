@@ -209,7 +209,7 @@ abstract class CodeGen_MySQL_Plugin_Element
         }
         echo "\n\n";
 
-        echo CodeGen_MySQL_Plugin_Element_StatusVariable::startRegistrations($this->name);
+        echo CodeGen_MySQL_Plugin_Element_StatusVariable::startRegistrations();
         foreach ($this->statusVariables as $variable) {
             echo $variable->getRegistration();
         }
@@ -227,7 +227,7 @@ mysql_declare_plugin($name)
   {$name}_plugin_init,
   {$name}_plugin_deinit,
   $version,
-  {$name}_status_variables,
+  status_variables,
   NULL, /* placeholder for system variables, not available yet */
   NULL, /* placeholder for command line options, not available yet */
 }

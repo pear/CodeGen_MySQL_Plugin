@@ -111,9 +111,9 @@ class CodeGen_MySQL_Plugin_Element_StatusVariable
 	return "  { \"{$this->name}\", (char *)$value, SHOW_{$this->type}},\n";
   }
 
-  static function startRegistrations($prefix)
+  static function startRegistrations($prefix="")
   {
-    return "struct st_mysql_show_var {$prefix}_status_variables[] = {\n";
+    return "struct st_mysql_show_var {$prefix}status_variables[] = {\n";
   }
   
   static function endRegistrations($prefix) 
@@ -163,11 +163,11 @@ class CodeGen_MySQL_Plugin_Element_StatusVariable
 	  }
 	  echo "\n\n";
 	  
-	  echo CodeGen_MySQL_Plugin_Element_StatusVariable::startRegistrations($this->name ."_". $this->value);
+	  echo CodeGen_MySQL_Plugin_Element_StatusVariable::startRegistrations($this->value."_");
 	  foreach ($this->statusVariables as $variable) {
 		echo $variable->getRegistration($this->name."_");
 	  }
-	  echo CodeGen_MySQL_Plugin_Element_StatusVariable::endRegistrations($this->name  ."_". $this->value);	  
+	  echo CodeGen_MySQL_Plugin_Element_StatusVariable::endRegistrations($this->value-"_");	  
 	  return ob_get_clean();
 	  break;
 
