@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<plugin name="gzip_fulltext">
+  <maintainer>
+    <name>Hartmut Holzgraefe</name>
+    <email>hartmut@mysql.com</email>
+  </maintainer>
+
+  <license>GPL</license>
+
+  <release>
+    <version>0.1</version>
+    <date>2004-05-25</date>
+    <state>beta</state>
+    <notes>
+     First working release
+    </notes>
+  </release>
+
+  <deps>
+   <src/>
+  </deps>
+
+ <fulltext name="gzip">
+  <summary>A fulltext plugin to search on gzip COMPRESS()ed fields</summary>
+
+  <parser>
+   <code>
+<![CDATA[
+    /* check for compress header to distinguish between compressed data
+       and uncompressed search terms
+       MySQL COMPRESS() stores the real data length in the first 4 bytes
+       followed by the compressed data which starts with the two magic
+       marker bytes 0x78, 0x9C
+    */
+	if ((param->length >= 6) 
+        && ((unsigned char)(param->doc[4]) == 0x78) 
+        && ((unsigned char)(param->doc[5]) == 0x9C)) {
+	  ulong real_size;
+	  char *real_doc;
+
+      /* calculate the real size and allocate memory */
+	  real_size = uint4korr(&param->length) & 0x3FFFFFFF;
+	  real_doc = malloc(real_size + 1);
+      if (!real_doc) {
+          return 1;
+      }
+
+      /* the following flag needs to be set as we uncompress
+         to dynamic storage we free again right away */
+	  param->flags |=  MYSQL_FTFLAGS_NEED_COPY;
+
+      /* uncompress  */
+	  result = uncompress((unsigned char*)real_doc, &real_size, (unsigned char *)(param->doc) + 4, param->length);
+
+	  if (result == Z_OK) {
+          /* OK, pass on to default parser */
+		  result = param->mysql_parse(param, real_doc, real_size);
+	  } else {
+          /* failure */
+		  result = 1;
+	  }
+
+      /* cleanup, no leaks please */
+	  free(real_doc);        
+
+      return result;
+  } else {
+     /* uncompressed data is passed on right away */
+	 return param->mysql_parse(param, param->doc, param->length);
+  }
+]]>
+   </code>
+  </parser>
+ </fulltext>
+
+</plugin>
