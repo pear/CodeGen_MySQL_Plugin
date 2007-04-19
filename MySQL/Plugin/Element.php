@@ -27,6 +27,8 @@
 require_once "CodeGen/Element.php";
 require_once "CodeGen/Tools/Indent.php";
 
+require_once "CodeGen/MySQL/Plugin/Element/Test.php";
+
 // }}} 
 
 /**
@@ -259,6 +261,14 @@ static int {$this->name}_plugin_deinit(void *data)
         $code = CodeGen_Tools_Indent::indent($level, $code);
 
         return $code;
+    }
+
+    function installStatement($extension) {
+        return "INSTALL PLUGIN `{$this->name}` SONAME '".$extension->getName()."';\n";
+    }
+
+    function uninstallStatement($extension) {
+        return "FLUSH TABLES;\nUNINSTALL PLUGIN `{$this->name}`;\n";
     }
 }
 

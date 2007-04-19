@@ -232,6 +232,39 @@ This is a MySQL plugin generetad using CodeGen_Mysql_Plugin <?php echo self::ver
         $this->plugins[$plugin->getName()] = $plugin;
     }
 
+/*
+    function writeTests()
+    {
+        parent::writeTests();
+
+        $this->addPackageFile("test", "tests/install_plugins.inc");
+        $file = new CodeGen_Tools_Outbuf($this->dirpath."/tests/install_plugins.inc");		
+        echo "-- disable_warnings\n";
+        foreach ($this->plugins as $plugin) {
+            echo $plugin->installStatement($this)."\n";
+        }
+        echo "-- enable_warnings\n";
+        $file->write();
+
+        $this->addPackageFile("test", "tests/uninstall_plugins.inc");
+        $file = new CodeGen_Tools_Outbuf($this->dirpath."/tests/uninstall_plugins.inc");		
+        foreach ($this->plugins as $plugin) {
+            echo $plugin->uninstallStatement($this)."\n";
+        }
+        $file->write();
+
+        // plugin specific tests
+        foreach ($this->plugins as $plugin) {
+            $plugin->writeTests($this);
+        }
+
+    }
+*/
+
+    function testFactory()
+    {
+        return new CodeGen_MySQL_Plugin_Element_Test(); 
+    }
 
 }   
 
