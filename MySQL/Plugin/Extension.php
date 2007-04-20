@@ -162,6 +162,10 @@ class CodeGen_MySQL_Plugin_Extension
         
         echo $this->getLicenseComment();
 
+        foreach ($this->headers as $header) {
+            echo $header->hCode(false);
+        }
+        
         echo "
 #include <stdlib.h>
 #include <string.h>
@@ -169,6 +173,10 @@ class CodeGen_MySQL_Plugin_Extension
 #include <my_global.h>
 #include <mysql/plugin.h>
 ";
+        
+        foreach ($this->headers as $header) {
+            echo $header->hCode(true);
+        }
         
         $declarations = array();
         foreach ($this->plugins as $plugin) {
@@ -232,7 +240,7 @@ This is a MySQL plugin generetad using CodeGen_Mysql_Plugin <?php echo self::ver
         $this->plugins[$plugin->getName()] = $plugin;
     }
 
-/*
+
     function writeTests()
     {
         parent::writeTests();
@@ -252,14 +260,7 @@ This is a MySQL plugin generetad using CodeGen_Mysql_Plugin <?php echo self::ver
             echo $plugin->uninstallStatement($this)."\n";
         }
         $file->write();
-
-        // plugin specific tests
-        foreach ($this->plugins as $plugin) {
-            $plugin->writeTests($this);
-        }
-
     }
-*/
 
     function testFactory()
     {
