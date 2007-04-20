@@ -264,7 +264,7 @@ static int {$this->name}_plugin_deinit(void *data)
     }
 
     function installStatement($extension) {
-        return "INSTALL PLUGIN `{$this->name}` SONAME '".$extension->getName()."';\n";
+        return "INSTALL PLUGIN `{$this->name}` SONAME '".$extension->getName().".so';\n";
     }
 
     function uninstallStatement($extension) {
