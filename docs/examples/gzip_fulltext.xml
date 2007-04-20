@@ -18,6 +18,7 @@
 
   <deps>
    <src/>
+   <header name="zlib.h"/>
   </deps>
 
  <fulltext name="gzip">
@@ -37,6 +38,7 @@
         && ((unsigned char)(param->doc[5]) == 0x9C)) {
 	  ulong real_size;
 	  char *real_doc;
+	  int result;
 
       /* calculate the real size and allocate memory */
 	  real_size = uint4korr(&param->length) & 0x3FFFFFFF;
@@ -71,6 +73,54 @@
 ]]>
    </code>
   </parser>
+
+  <test name="gzip_plugin">
+   <!-- this test just checks for the plugins existance -->
+   <code>
+SELECT PLUGIN_NAME, PLUGIN_STATUS,PLUGIN_TYPE,PLUGIN_LIBRARY FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='gzip';
+   </code>
+   <result>
+PLUGIN_NAME	PLUGIN_STATUS	PLUGIN_TYPE	PLUGIN_LIBRARY
+gzip	ACTIVE	FTPARSER	gzip_fulltext.so
+   </result>
+  </test>
+
+  <test name="gzip_fulltext">
+   <!-- 
+    this test creates a table using the new plugin,
+    populates it with some text rows, both gzip compressed and plain text,
+    and then checks the result of some full text queries, again using 
+    both compressed and uncompressed data
+   -->
+   <code>
+--disable_warnings
+DROP TABLE IF EXISTS t1;
+--ensable_warnings
+CREATE TABLE t1 (     
+  doc CHAR(100) DEFAULT NULL,     
+  FULLTEXT KEY `doc` (`doc`) WITH PARSER gzip   
+) ENGINE=MyISAM DEFAULT CHARSET latin1;
+  
+INSERT INTO t1 (doc) VALUES ('this is a fulltext parser test');
+INSERT INTO t1 (doc) VALUES (COMPRESS('this is a fulltext parser test'));
+INSERT INTO t1 (doc) VALUES ('the meaning of life, universe and all the rest');
+INSERT INTO t1 (doc) VALUES ('some dummy text');
+INSERT INTO t1 (doc) VALUES (COMPRESS('more dummy text'));
+  
+SELECT COUNT(*) FROM t1 WHERE MATCH(doc) AGAINST('parser');  
+SELECT COUNT(*) FROM t1 WHERE MATCH(doc) AGAINST(COMPRESS('parser'));
+SELECT COUNT(*) FROM t1 WHERE MATCH(doc) AGAINST(COMPRESS('universe'));
+   </code>
+   <result>
+COUNT(*)
+2
+COUNT(*)
+2
+COUNT(*)
+1
+   </result>
+  </test>
+
  </fulltext>
 
 </plugin>
