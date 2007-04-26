@@ -385,6 +385,11 @@ class CodeGen_MySQL_Plugin_ExtensionParser
 
         return $this->helper->addField($attr["name"], $attr["type"], $attr["length"], $null, $attr["default"]);
     }
+
+    function tagend_infoschema_code($attr, $data)
+    {
+        $this->helper->setCode($data);
+    }
 }
 
 
