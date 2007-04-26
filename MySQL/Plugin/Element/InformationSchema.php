@@ -45,13 +45,34 @@ class CodeGen_MySQL_Plugin_Element_InformationSchema
 {
   protected $fields = array();
 
+  protected $code = "";
+
   function __construct()
   {
-    $this->initPrefix   = $this->initPrefix = "  ST_SCHEMA_TABLE *schema = (ST_SCHEMA_TABLE *)data;\n";
-    $this->deinitPrefix = $this->initPrefix;
+    $this->initPrefix = "  ST_SCHEMA_TABLE *schema = (ST_SCHEMA_TABLE *)data;\n";
+    $this->deinitPrefix = "  ST_SCHEMA_TABLE *schema = (ST_SCHEMA_TABLE *)data;\n";
 
     // this plugin type requires header files not installed by "make install"
     $this->requiresSource = true;
+  }
+
+
+  function setName($name)
+  {
+	$err = parent::setName($name);
+	if (PEAR::isError($err)) {
+	  return $err;
+	}
+
+    $this->initPrefix.= "  schema->fields_info = {$name}_field_info;\n";
+    $this->initPrefix.= "  schema->fill_table = {$name}_fill_table;\n";
+
+    return true;
+  }
+
+  function setCode($code)
+  {
+	$this->code = $code;
   }
 
     /**
@@ -67,9 +88,9 @@ class CodeGen_MySQL_Plugin_Element_InformationSchema
 
     function getPluginCode()
     {
-      $code = parent::getPluginCode();
+      $code = "
+bool schema_table_store_record(THD *thd, TABLE *table);
 
-      $code.= "
 static struct st_mysql_information_schema {$this->name}_descriptor =
 { 
   MYSQL_INFORMATION_SCHEMA_INTERFACE_VERSION
@@ -92,7 +113,18 @@ ST_FIELD_INFO {$this->name}_field_info[] =
         $code.= "NULL},\n";
       }
 
-      $code.= "};\n";
+	  $code.= "  {0, 0, MYSQL_TYPE_STRING,0, 0, 0}\n";
+      $code.= "};\n\n";
+
+	  $code.= "int {$this->name}_fill_table(THD *thd, TABLE_LIST *tables, COND *cond)\n";
+      $code.= "{\n";
+      $code.= $this->code;
+      $code.= "\n};\n\n";
+
+	  
+
+      $code.= parent::getPluginCode();
+
 
       return $code;
     }
