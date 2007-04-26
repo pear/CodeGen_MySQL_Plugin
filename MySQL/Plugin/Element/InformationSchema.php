@@ -43,6 +43,17 @@ require_once "CodeGen/MySQL/Plugin/Element.php";
 class CodeGen_MySQL_Plugin_Element_InformationSchema
   extends CodeGen_MySQL_Plugin_Element
 {
+  protected $fields = array();
+
+  function __construct()
+  {
+    $this->initPrefix   = $this->initPrefix = "  ST_SCHEMA_TABLE *schema = (ST_SCHEMA_TABLE *)data;\n";
+    $this->deinitPrefix = $this->initPrefix;
+
+    // this plugin type requires header files not installed by "make install"
+    $this->requiresSource = true;
+  }
+
     /**
      * Plugin type specifier is needed for plugin registration
      *
@@ -52,5 +63,101 @@ class CodeGen_MySQL_Plugin_Element_InformationSchema
     function getPluginType() 
     {
       return "MYSQL_INFORMATION_SCHEMA_PLUGIN";
+    }
+
+    function getPluginCode()
+    {
+      $code = parent::getPluginCode();
+
+      $code.= "
+static struct st_mysql_information_schema {$this->name}_descriptor =
+{ 
+  MYSQL_INFORMATION_SCHEMA_INTERFACE_VERSION
+};
+
+";
+
+      $code.= "
+ST_FIELD_INFO {$this->name}_field_info[] =
+{
+";
+
+      foreach ($this->fields as $field) {
+        $code.= '  {';
+        $code.= '"'.$field['name'].'", ';
+        $code.= $field['length'].', ';
+        $code.= "MYSQL_TYPE_".strtoupper($field['type']).', ';
+        $code.= $field['default'].', ';
+        $code.= ($field['null'] ? '1' : '0').', ';
+        $code.= "NULL},\n";
+      }
+
+      $code.= "};\n";
+
+      return $code;
+    }
+
+    function addField($name, $type, $length = 0, $null = false, $default = 0)
+    {
+        if (!self::isName($name)) {
+            return PEAR::raiseError("'$name' is not a valid information schema field name");
+        }
+       
+        switch ($type) {
+            case "LONG":
+            case "STRING":
+            /* TODO support all types 
+            case "TINY":
+            case "SHORT":  
+            case "DECIMAL": 
+            case "FLOAT":  
+            case "DOUBLE":
+            case "NULL":   
+            case "TIMESTAMP":
+            case "LONGLONG":
+            case "INT24":
+            case "DATE":   
+            case "TIME":
+            case "DATETIME": 
+            case "YEAR":
+            case "NEWDATE": 
+            case "VARCHAR":
+            case "BIT":
+            case "NEWDECIMAL":
+            case "ENUM":
+            case "SET":
+            case "TINY_BLOB":
+            case "MEDIUM_BLOB":
+            case "LONG_BLOB":
+            case "BLOB":
+            case "VAR_STRING":
+            case "GEOMETRY":
+            */
+                break;
+            default:
+                return PEAR::raiseError("'$type' is not a valid information schema field type");
+        }
+
+        if (!$length) {
+            switch ($type) {
+                case "LONG":
+                    $length = "MY_INT64_NUM_DECIMAL_DIGITS";
+                    break;
+                case "STRING":
+                    $length = "NAME_CHAR_LEN";
+                    break;
+            }
+        }
+
+        $this->fields[] = array("name"    => $name, 
+                                "type"    => $type,
+                                "length"  => $length,
+                                "null"    => $null,
+                                "default" => $default);
+    }
+
+    function needsSource()
+    {
+        return true;
     }
 }

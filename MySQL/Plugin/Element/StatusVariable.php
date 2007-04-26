@@ -52,63 +52,63 @@ class CodeGen_MySQL_Plugin_Element_StatusVariable
 
   public function __construct($type, $name, $value = false, $init = 0)
   {
-	$this->type  = strtoupper($type);
-	$this->name  = $name;
-	$this->value = $value;
-	$this->init  = $init;
+    $this->type  = strtoupper($type);
+    $this->name  = $name;
+    $this->value = $value;
+    $this->init  = $init;
   }
 
   function getName()
   {
-	return $this->name;
+    return $this->name;
   }
 
   function getType()
   {
-	return $this->type;
+    return $this->type;
   }
 
   static function isValidType($type)
   {
-	switch (strtoupper($type)) {
-	case "UNDEF": 
-	case "BOOL": 
-	case "INT": 
-	case "LONG":
-	case "LONGLONG": 
-	case "CHAR": 
-	case "CHAR_PTR":
-	case "FUNC":
-	case "ARRAY": 
-	  return true;
-	default:
-	  return PEAR::raiseError("'$type' is not a valid status variable type");
-	}
+    switch (strtoupper($type)) {
+    case "UNDEF": 
+    case "BOOL": 
+    case "INT": 
+    case "LONG":
+    case "LONGLONG": 
+    case "CHAR": 
+    case "CHAR_PTR":
+    case "FUNC":
+    case "ARRAY": 
+      return true;
+    default:
+      return PEAR::raiseError("'$type' is not a valid status variable type");
+    }
   }
 
   function getRegistration($prefix = "") 
   {
-	switch ($this->type) {
-	  // TODO no float type? 
-	case "BOOL": 
-	case "INT": 
-	case "LONG":
-	case "LONGLONG": 
-	case "CHAR": 
-	case "CHAR_PTR":
-	case "FUNC":
-	  $value = "&".$prefix.$this->value;
-	  break;
-	case "ARRAY": 
-	  $value = "&".$prefix.$this->value."_status_variables";
-	  break;
-	case "UNDEF": 
-	default:
-	  $value = "NULL";
-	  break;
-	}
+    switch ($this->type) {
+      // TODO no float type? 
+    case "BOOL": 
+    case "INT": 
+    case "LONG":
+    case "LONGLONG": 
+    case "CHAR": 
+    case "CHAR_PTR":
+    case "FUNC":
+      $value = "&".$prefix.$this->value;
+      break;
+    case "ARRAY": 
+      $value = "&".$prefix.$this->value."_status_variables";
+      break;
+    case "UNDEF": 
+    default:
+      $value = "NULL";
+      break;
+    }
 
-	return "  { \"{$this->name}\", (char *)$value, SHOW_{$this->type}},\n";
+    return "  { \"{$this->name}\", (char *)$value, SHOW_{$this->type}},\n";
   }
 
   static function startRegistrations($prefix="")
@@ -118,85 +118,85 @@ class CodeGen_MySQL_Plugin_Element_StatusVariable
   
   static function endRegistrations($prefix) 
   {
-	return "  { NULL, NULL, 0 }\n};\n";
+    return "  { NULL, NULL, SHOW_UNDEF }\n};\n";
   }
 
   function getDefinition($prefix = "") 
   {
-	switch ($this->type) {
-	case "UNDEF": 
-	  break;
+    switch ($this->type) {
+    case "UNDEF": 
+      break;
 
-	case "BOOL": 
-	  $code = "bool $prefix{$this->value}";
-	  break;
+    case "BOOL": 
+      $code = "bool $prefix{$this->value}";
+      break;
 
-	case "INT": 
-	  $code = "uint32 $prefix{$this->value}";
-	  break;
+    case "INT": 
+      $code = "uint32 $prefix{$this->value}";
+      break;
 
-	case "LONG":
-	  $code = "long $prefix{$this->value}";
-	  break;
+    case "LONG":
+      $code = "long $prefix{$this->value}";
+      break;
 
-	case "LONGLONG": 
-	  $code = "longlong $prefix{$this->value}";
-	  break;
+    case "LONGLONG": 
+      $code = "longlong $prefix{$this->value}";
+      break;
 
-	case "CHAR": 
-	  $code = "char $prefix{$this->value}";
-	  break;
+    case "CHAR": 
+      $code = "char $prefix{$this->value}";
+      break;
 
-	case "CHAR_PTR":
-	  $code = "char* $prefix{$this->value}";
-	  break;
+    case "CHAR_PTR":
+      $code = "char* $prefix{$this->value}";
+      break;
 
-	case "FUNC":
-	  // callback function prototype (TODO: can we use the mysql_show_var_func somehow here?)
-	  return "int $prefix{$this->value} (void *thd, struct st_mysql_show_var *out, char *buf);\n";
-	  break;
+    case "FUNC":
+      // callback function prototype (TODO: can we use the mysql_show_var_func somehow here?)
+      return "int $prefix{$this->value} (void *thd, struct st_mysql_show_var *out, char *buf);\n";
+      break;
 
-	case "ARRAY": 
-	  ob_start();
-	  foreach ($this->statusVariables as $variable) {
-		echo $variable->getDefinition($this->name."_");
-	  }
-	  echo "\n\n";
-	  
-	  echo CodeGen_MySQL_Plugin_Element_StatusVariable::startRegistrations($this->value."_");
-	  foreach ($this->statusVariables as $variable) {
-		echo $variable->getRegistration($this->name."_");
-	  }
-	  echo CodeGen_MySQL_Plugin_Element_StatusVariable::endRegistrations($this->value-"_");	  
-	  return ob_get_clean();
-	  break;
+    case "ARRAY": 
+      ob_start();
+      foreach ($this->statusVariables as $variable) {
+        echo $variable->getDefinition($this->name."_");
+      }
+      echo "\n\n";
+      
+      echo CodeGen_MySQL_Plugin_Element_StatusVariable::startRegistrations($this->value."_");
+      foreach ($this->statusVariables as $variable) {
+        echo $variable->getRegistration($this->name."_");
+      }
+      echo CodeGen_MySQL_Plugin_Element_StatusVariable::endRegistrations($this->value-"_");   
+      return ob_get_clean();
+      break;
 
-	default:
-	  return "";
-	  break;
-	}
-	
-	if ($this->init !== false) {
-	  $code .= " = ".$this->init;
-	}
-	
-	$code.= ";\n";
-	return $code;
+    default:
+      return "";
+      break;
+    }
+    
+    if ($this->init !== false) {
+      $code .= " = ".$this->init;
+    }
+    
+    $code.= ";\n";
+    return $code;
   }
 
   function addStatusVariable($var)
   {
-	if ($this->type !== "ARRAY") {
-	  return PEAR::raiseError("only variables of type ARRAY can have sub-variables");
-	}
+    if ($this->type !== "ARRAY") {
+      return PEAR::raiseError("only variables of type ARRAY can have sub-variables");
+    }
 
-	if (isset($this->statusVariables[$var->getName()])) {
-	  return PEAR::raiseError("status variable '".$var->getName()."' already defined (x)");
-	}
-	
-	$this->statusVariables[$var->getName()] = $var;
-	
-	return true;
+    if (isset($this->statusVariables[$var->getName()])) {
+      return PEAR::raiseError("status variable '".$var->getName()."' already defined (x)");
+    }
+    
+    $this->statusVariables[$var->getName()] = $var;
+    
+    return true;
   }
 
 }

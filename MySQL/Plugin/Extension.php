@@ -93,15 +93,7 @@ class CodeGen_MySQL_Plugin_Extension
     {
         parent::__construct();
 
-        $this->addConfigFragment("WITH_MYSQL_SRC()", "bottom");
-
-        $requiresSource = false;
-        foreach ($this->plugins as $plugin) {
-            $requiresSource |= $plugin->getRequiresSource();
-        }
-        if (!$requiresSource) {
-            $this->addConfigFragment("WITH_MYSQL()", "bottom");
-        }
+        $this->setLang = "c++";
 
         $this->addConfigFragment("MYSQL_USE_PLUGIN_API()", "bottom");
 
@@ -171,9 +163,14 @@ class CodeGen_MySQL_Plugin_Extension
 #include <string.h>
 #include <ctype.h>
 #include <my_global.h>
+#include <mysql_version.h>
 #include <mysql/plugin.h>
 ";
         
+        if ($this->needSource) {
+            echo "#include <mysql_priv.h>\n";
+        }
+
         foreach ($this->headers as $header) {
             echo $header->hCode(true);
         }
@@ -238,6 +235,10 @@ This is a MySQL plugin generetad using CodeGen_Mysql_Plugin <?php echo self::ver
     function addPlugin(CodeGen_MySQL_Plugin_Element $plugin)
     {
         $this->plugins[$plugin->getName()] = $plugin;
+
+        if ($plugin->getRequiresSource()) {
+            $this->needSource = true;
+        }
     }
 
 
@@ -246,7 +247,7 @@ This is a MySQL plugin generetad using CodeGen_Mysql_Plugin <?php echo self::ver
         parent::writeTests();
 
         $this->addPackageFile("test", "tests/install_plugins.inc");
-        $file = new CodeGen_Tools_Outbuf($this->dirpath."/tests/install_plugins.inc");		
+        $file = new CodeGen_Tools_Outbuf($this->dirpath."/tests/install_plugins.inc");      
         echo "-- disable_warnings\n";
         foreach ($this->plugins as $plugin) {
             echo $plugin->installStatement($this)."\n";
@@ -255,7 +256,7 @@ This is a MySQL plugin generetad using CodeGen_Mysql_Plugin <?php echo self::ver
         $file->write();
 
         $this->addPackageFile("test", "tests/uninstall_plugins.inc");
-        $file = new CodeGen_Tools_Outbuf($this->dirpath."/tests/uninstall_plugins.inc");		
+        $file = new CodeGen_Tools_Outbuf($this->dirpath."/tests/uninstall_plugins.inc");        
         foreach ($this->plugins as $plugin) {
             echo $plugin->uninstallStatement($this)."\n";
         }

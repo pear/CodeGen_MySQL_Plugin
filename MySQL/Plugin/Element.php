@@ -47,18 +47,32 @@ abstract class CodeGen_MySQL_Plugin_Element
   extends CodeGen_Element
 {
    /**
+    * Plugin initialization code prefix
+    *
+    * @var string
+    */
+    protected $initPrefix = "";
+
+   /**
+    * Plugin shutdown code prefix
+    *
+    * @var string
+    */
+    protected $deinitPrefix = "";
+
+   /**
     * Plugin initialization code
     *
     * @var string
     */
-    protected $initCode;
+    protected $initCode = "return 0;";
 
    /**
     * Plugin shutdown code
     *
     * @var string
     */
-    protected $deinitCode;
+    protected $deinitCode = "return 0;";
 
     /** 
      * Do we require MySQL source or can we do with public headers only?
@@ -79,8 +93,6 @@ abstract class CodeGen_MySQL_Plugin_Element
      */
     function __construct()
     {
-      $this->setInitCode("return 0;");
-      $this->setDeinitCode("return 0;");
       $this->setSummary("no summary given");
     }
 
@@ -244,11 +256,13 @@ mysql_declare_plugin_end;
         return "
 static int {$this->name}_plugin_init(void *data)
 {
+{$this->initPrefix}
 {$this->initCode}
 }
 
 static int {$this->name}_plugin_deinit(void *data)
 {
+{$this->deinitPrefix}
 {$this->deinitCode}
 }
 ";
@@ -270,6 +284,7 @@ static int {$this->name}_plugin_deinit(void *data)
     function uninstallStatement($extension) {
         return "FLUSH TABLES;\nUNINSTALL PLUGIN `{$this->name}`;\n";
     }
+
 }
 
 /*

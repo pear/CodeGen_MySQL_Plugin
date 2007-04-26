@@ -350,6 +350,41 @@ class CodeGen_MySQL_Plugin_ExtensionParser
         return $this->end_generic_summary($attr, $data);
     }
 
+    // plugin specific tags
+    function tagstart_infoschema_field($attr)
+    {
+        $err = $this->checkAttributes($attr, array("name", "type", "length", "null", "default"));
+        if (PEAR::isError($err)) {
+            return $err;
+        }
+        
+        if (!isset($attr["name"])) {
+            return PEAR::raiseError("name attribut for information schema field missing");
+        }
+
+        if (!isset($attr["type"])) {
+            return PEAR::raiseError("type attribut for information schema field missing");
+        }
+
+        if (!isset($attr["length"])) {
+            $attr["length"] = false;
+        }
+
+        if (isset($attr["null"])) {
+            $null = $this->toBool($attr["null"]);
+            if (PEAR::isError($null)) {
+                return $null;
+            }
+        } else {
+            $null = false;
+        }
+
+        if (!isset($attr["default"])) {
+            $attr["default"] = false;
+        }
+
+        return $this->helper->addField($attr["name"], $attr["type"], $attr["length"], $null, $attr["default"]);
+    }
 }
 
 
