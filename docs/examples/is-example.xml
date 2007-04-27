@@ -27,10 +27,10 @@
 <?data
   TABLE* table= tables->table;
 
-  table->field[0]->store(23);
+  table->field[FIELD_FOOBAR]->store(23);
   schema_table_store_record(thd, table);
 
-  table->field[0]->store(23);
+  table->field[FIELD_FOOBAR]->store(23);
   schema_table_store_record(thd, table);
 
   return 0;
