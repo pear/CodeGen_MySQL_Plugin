@@ -135,6 +135,10 @@ ST_FIELD_INFO {$this->name}_field_info[] =
             return PEAR::raiseError("'$name' is not a valid information schema field name");
         }
        
+        if (isset($this->fields[$name])) {
+            return PEAR::raiseError("duplicate field name '$name'");
+        }
+
         switch ($type) {
             case "LONG":
             case "STRING":
@@ -181,11 +185,11 @@ ST_FIELD_INFO {$this->name}_field_info[] =
             }
         }
 
-        $this->fields[] = array("name"    => $name, 
-                                "type"    => $type,
-                                "length"  => $length,
-                                "null"    => $null,
-                                "default" => $default);
+        $this->fields[$name] = array("name"    => $name, 
+                                     "type"    => $type,
+                                     "length"  => $length,
+                                     "null"    => $null,
+                                     "default" => $default);
     }
 
     function needsSource()
