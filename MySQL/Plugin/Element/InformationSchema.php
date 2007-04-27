@@ -59,10 +59,10 @@ class CodeGen_MySQL_Plugin_Element_InformationSchema
 
   function setName($name)
   {
-	$err = parent::setName($name);
-	if (PEAR::isError($err)) {
-	  return $err;
-	}
+    $err = parent::setName($name);
+    if (PEAR::isError($err)) {
+      return $err;
+    }
 
     $this->initPrefix.= "  schema->fields_info = {$name}_field_info;\n";
     $this->initPrefix.= "  schema->fill_table = {$name}_fill_table;\n";
@@ -72,7 +72,7 @@ class CodeGen_MySQL_Plugin_Element_InformationSchema
 
   function setCode($code)
   {
-	$this->code = $code;
+    $this->code = $code;
   }
 
     /**
@@ -113,15 +113,22 @@ ST_FIELD_INFO {$this->name}_field_info[] =
         $code.= "NULL},\n";
       }
 
-	  $code.= "  {0, 0, MYSQL_TYPE_STRING,0, 0, 0}\n";
+      $code.= "  {0, 0, MYSQL_TYPE_STRING,0, 0, 0}\n";
       $code.= "};\n\n";
 
-	  $code.= "int {$this->name}_fill_table(THD *thd, TABLE_LIST *tables, COND *cond)\n";
+      $n = 0;
+      foreach ($this->fields as $field) {
+        $code.= sprintf("#define FIELD_%-20s %d\n", $field["name"], $n++);
+      }
+
+      $code.= "int {$this->name}_fill_table(THD *thd, TABLE_LIST *tables, COND *cond)\n";
       $code.= "{\n";
       $code.= $this->code;
       $code.= "\n};\n\n";
 
-	  
+      foreach ($this->fields as $field) {
+        $code.= "#undef FIELD_$field[name]\n";
+      }   
 
       $code.= parent::getPluginCode();
 
@@ -183,6 +190,10 @@ ST_FIELD_INFO {$this->name}_field_info[] =
                     $length = "NAME_CHAR_LEN";
                     break;
             }
+        }
+
+        if (empty($default)) {
+            $default = 0;
         }
 
         $this->fields[$name] = array("name"    => $name, 
