@@ -119,9 +119,10 @@ class CodeGen_MySQL_Plugin_Element_Storage
      *
      * @param  string  handler name
      * @return bool    function name if implemented, else "NULL"
+     */
     function funcName($name)
     {
-        if isset($this->functions[$name]) {
+        if (isset($this->functions[$name])) {
             return strtolower($this->name)."_".$name;
         } else {
             return "NULL";
