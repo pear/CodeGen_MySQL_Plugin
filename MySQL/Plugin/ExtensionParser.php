@@ -48,7 +48,10 @@ class CodeGen_MySQL_Plugin_ExtensionParser
     
     function start_generic_plugin($classname, $attr)
     {
-        $this->checkAttributes($attr, array(), array("name"));
+        $err = $this->checkAttributes($attr, array(), array("name"));
+        if (PEAR::isError($err)) {
+            return $err;
+        }
 
         $classname = "CodeGen_Mysql_Plugin_Element_".$classname;
 
@@ -59,6 +62,9 @@ class CodeGen_MySQL_Plugin_ExtensionParser
     function end_generic_plugin($attr, $data)
     {
         $err = $this->extension->addPlugin($this->helper);
+        if (PEAR::isError($err)) {
+            return $err;
+        }
 
         $this->popHelper();
         return $err;        
@@ -68,7 +74,7 @@ class CodeGen_MySQL_Plugin_ExtensionParser
     {
         return $this->helper->setInitCode($data);
     }
-
+ 
     function end_generic_deinit($attr, $data)
     {
         return $this->helper->setDeinitCode($data);
