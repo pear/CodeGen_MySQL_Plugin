@@ -268,6 +268,11 @@ static int {$this->name}_plugin_deinit(void *data)
 ";
     }
 
+    function getPluginHeader()
+    {
+        return "";
+    }
+
     function indentCode($code, $level=2)
     {
         $code = CodeGen_Tools_Indent::linetrim($code);
@@ -277,12 +282,19 @@ static int {$this->name}_plugin_deinit(void *data)
         return $code;
     }
 
-    function installStatement($extension) {
+    function installStatement($extension) 
+    {
         return "INSTALL PLUGIN `{$this->name}` SONAME '".$extension->getName().".so';\n";
     }
 
-    function uninstallStatement($extension) {
+    function uninstallStatement($extension) 
+    {
         return "FLUSH TABLES;\nUNINSTALL PLUGIN `{$this->name}`;\n";
+    }
+
+    function isValid()
+    {
+        return true;
     }
 
 }
