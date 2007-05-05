@@ -313,6 +313,20 @@ class CodeGen_MySQL_Plugin_ExtensionParser
         return $this->end_generic_summary($attr, $data);
     }
 
+    // plugin specific tags
+    function tagstart_storage_function($attr)
+    {
+        $err = $this->checkAttributes($attr, array(), array("name"));
+        if (PEAR::isError($err)) {
+            return $err;
+        }
+    }
+
+    function tagend_storage_function($attr, $data)
+    {
+        $this->helper->setFunction($attr["name"], $data);
+    }
+
     //  ___        __          ____       _                          
     // |_ _|_ __  / _| ___    / ___|  ___| |__   ___ _ __ ___   __ _ 
     //  | || '_ \| |_ / _ \   \___ \ / __| '_ \ / _ \ '_ ` _ \ / _` |
