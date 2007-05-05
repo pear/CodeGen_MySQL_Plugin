@@ -241,57 +241,6 @@ static handler* {$lowname}_create_handler(handlerton *hton,
       $code.= "struct st_mysql_storage_engine {$lowname}_descriptor=\n";
       $code.= "{ MYSQL_HANDLERTON_INTERFACE_VERSION };\n";
 
-
-      if (false) {
-      $code.="handlerton {$lowname}_hton= {\n";
-      $code.="  \"$upname\",\n";
-      $code.="  SHOW_OPTION_YES,\n";
-      $code.="  \"{$this->summary}\",\n"; 
-      $code.="  DB_TYPE_CUSTOM,\n";
-      $code.="  ".$this->funcName("init").", /* Initialize */\n";
-      $code.="  0,       /* slot */\n";
-      $code.="  0,       /* savepoint size. */\n";
-      $code.="  ".$this->funcName("close_connection").", /* close_connection */\n";
-      $code.="  ".$this->funcName("savepoint").", /* savepoint */\n";
-      $code.="  ".$this->funcName("savepoint_rollback").", /* rollback to savepoint */\n";
-      $code.="  ".$this->funcName("savepoint_release").", /* release savepoint */\n";
-      $code.="  ".$this->funcName("commit").", /* commit */\n";
-      $code.="  ".$this->funcName("rollback").", /* rollback */\n";
-      $code.="  ".$this->funcName("prepare").", /* prepare */\n";
-      $code.="  ".$this->funcName("recover").", /* recover */\n";
-      $code.="  ".$this->funcName("commit_by_xid").", /* commit_by_xid */\n";
-      $code.="  ".$this->funcName("rollback_by_xid").", /* rollback_by_xid */\n";
-      $code.="  ".$this->funcName("create_cursor_read_view").", /* create_cursor_read_view */\n";
-      $code.="  ".$this->funcName("set_cursor_read_view").", /* set_cursor_read_view */\n";
-      $code.="  ".$this->funcName("close_cursor_read_view").", /* close_cursor_read_view */\n";
-      $code.="  ".$this->funcName("create_handler").", /* Create a new handler */\n";
-      $code.="  ".$this->funcName("drop_database").", /* Drop a database */\n";
-      $code.="  ".$this->funcName("panic_call").", /* Panic call */\n";
-      $code.="  ".$this->funcName("release_temporary_latches").", /* Release temporary latches */\n";
-      $code.="  ".$this->funcName("update_statistics").", /* Update Statistics */\n";
-      $code.="  ".$this->funcName("start_snapshot").", /* Start Consistent Snapshot */\n";
-      $code.="  ".$this->funcName("flush_logs").", /* Flush logs */\n";
-      $code.="  ".$this->funcName("show_status").", /* Show status */\n";
-
-      $code.="  ".$this->funcName("partition_flags").", /* */\n";
-      $code.="  ".$this->funcName("alter_table_flags").", /* */\n";
-      $code.="  ".$this->funcName("alter_tablespace").", /* */\n";
-      $code.="  ".$this->funcName("fill_files_table").", /* */\n";
-
-      $flags = array();
-      foreach ($this->haFlags as $flag => $value) {
-          if ($value) {
-              $flags[] = $flag;
-          }
-      }
-      $code.="  ".join(" | ", $flags).", /* handlder flags */\n";
-
-      $code.="  ".$this->funcName("binlog_func").", /* */\n";
-      $code.="  ".$this->funcName("binlog_log_query").", /* */\n";
-
-      $code.="};\n";
-      }
-
       return $code;
     }
 
