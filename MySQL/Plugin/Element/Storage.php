@@ -60,8 +60,7 @@ class CodeGen_MySQL_Plugin_Element_Storage
     protected $functions = array();
 
 
-    protected $requiredFunctions = array("bas_ext", 
-                                         "open", 
+    protected $requiredFunctions = array("open", 
                                          "close", 
                                          "rnd_init", 
                                          "rnd_next", 
@@ -71,6 +70,24 @@ class CodeGen_MySQL_Plugin_Element_Storage
                                          "create", 
                                          "store_lock"
                                          );
+
+    protected $fileExtensions = array();
+
+    function addFileExtension($param)
+    {
+      // TODO check valid fs name chars
+
+      $ext = strtoupper($param);
+      if ($ext{0} !== '.') {
+        $ext = '.' . $ext;
+      }
+
+      if (isset($this->fileExtensions[$ext])) {
+        return PEAR::raiseError("file extension '$ext' ($param) already defined");      
+      }
+
+      $this->fileExtensions[$ext] = $ext;
+    }
 
     /**
      * Handler flags
@@ -236,6 +253,16 @@ static handler* {$lowname}_create_handler(handlerton *hton,
         $code.= $function["head"].$function["body"]."}\n\n";
       }
 
+      $code.= "static const char *ha_{$lowname}_exts[] = {\n";
+      foreach ($this->fileExtensions as $fileExtension) {
+        $code.= '  "'.$fileExtension.'",'."\n";
+      }
+      $code.= "  NullS\n};\n\n";
+      $code.= "const char **ha_{$lowname}::bas_ext() const\n";
+      $code.= "{\n";
+      $code.= "  return ha_{$lowname}_exts;\n";
+      $code.= "}\n";
+
       $code.= parent::getPluginCode()."\n";
 
       $code.= "struct st_mysql_storage_engine {$lowname}_descriptor=\n";
@@ -297,8 +324,6 @@ public:
     $classname = "ha_".strtolower($name);
 
     switch ($name) {
-      case "bas_ext":
-        return "const char **{$classname}::bas_ext() const\n{\n";
       case "open":
         return "int {$classname}::open(const char *name, int mode, uint test_if_locked)\n{\n";    
       case "close":

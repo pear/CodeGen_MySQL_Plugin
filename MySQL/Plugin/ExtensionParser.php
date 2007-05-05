@@ -327,6 +327,16 @@ class CodeGen_MySQL_Plugin_ExtensionParser
         $this->helper->setFunction($attr["name"], $data);
     }
 
+    function tagstart_storage_fileextension($attr, $data)
+    {
+        $err = $this->checkAttributes($attr, array(), array("name"));
+        if (PEAR::isError($err)) {
+            return $err;
+        }
+
+        $this->helper->addFileExtension($attr["name"]);
+    }
+
     //  ___        __          ____       _                          
     // |_ _|_ __  / _| ___    / ___|  ___| |__   ___ _ __ ___   __ _ 
     //  | || '_ \| |_ / _ \   \___ \ / __| '_ \ / _ \ '_ ` _ \ / _` |
