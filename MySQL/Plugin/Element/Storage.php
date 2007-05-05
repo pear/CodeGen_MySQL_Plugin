@@ -60,6 +60,18 @@ class CodeGen_MySQL_Plugin_Element_Storage
     protected $functions = array();
 
 
+	protected $requiredFunctions = array("bas_ext", 
+										 "open", 
+										 "close", 
+										 "rnd_init", 
+										 "rnd_next", 
+										 "rnd_pos", 
+										 "position", 
+										 "info", 
+										 "create", 
+										 "store_lock"
+										 );
+
     /**
      * Handler flags
      *
@@ -102,13 +114,17 @@ class CodeGen_MySQL_Plugin_Element_Storage
      */
     function setFunction($name, $code)
     {
-        if (!$this->isName($name)) {
+    	$head = getFunctionHead($name);
+
+        if (!$head) { 
             return PEAR::raiseError("'$name' is not a valid handler function");
         }
+
         if (isset($this->functions[$name])) {
             return PEAR::raiseError("'$name' function declared twice");
         }
-        $this->functions[$name] = $code;
+		
+        $this->functions[$name] = array("head" => $head, "body" => $code);
 
         return true; 
     }
@@ -188,8 +204,45 @@ class CodeGen_MySQL_Plugin_Element_Storage
       $lowname = strtolower($name);
       $upname  = strtoupper($name);
 
-      $code = parent::getPluginCode()."\n";
+	  $this->initPrefix = "  
+  handlerton *{$lowname}_handlerton = (handlerton *)data;
+  {$lowname}_handlerton->state=   SHOW_OPTION_YES;
+  {$lowname}_handlerton->create=  {$lowname}_create_handler;
+  {$lowname}_handlerton->flags=   ";
 
+      $flags = array();
+      foreach ($this->haFlags as $flag => $value) {
+          if ($value) {
+              $flags[] = $flag;
+          }
+      }
+	  if (count($flags)) {
+		$flags = join(" | ", $flags);
+	  } else {
+		$flags = "0";
+	  }
+      $this->initPrefix.= "  $flags;\n";
+
+	  $code = "
+static handler* {$lowname}_create_handler(handlerton *hton,
+                                       TABLE_SHARE *table,
+                                       MEM_ROOT *mem_root)
+{
+	  return new (mem_root) ha_{$lowname}(hton, table);
+}
+";
+
+      foreach ($this->functions as $name => $function) {
+        $code.= $function["head"].$function["body"]."}\n\n";
+      }
+
+      $code.= parent::getPluginCode()."\n";
+
+	  $code.= "struct st_mysql_storage_engine {$lowname}_descriptor=\n";
+	  $code.= "{ MYSQL_HANDLERTON_INTERFACE_VERSION };\n";
+
+
+	  if (false) {
       $code.="handlerton {$lowname}_hton= {\n";
       $code.="  \"$upname\",\n";
       $code.="  SHOW_OPTION_YES,\n";
@@ -237,5 +290,99 @@ class CodeGen_MySQL_Plugin_Element_Storage
       $code.="  ".$this->funcName("binlog_log_query").", /* */\n";
 
       $code.="};\n";
+	  }
+
+	  return $code;
     }
+
+
+    function getPluginHeader()
+    {
+      $name    = $this->name;
+      $lowname = strtolower($name);
+      $upname  = strtoupper($name);
+
+      // TODO: make settable
+      $index      = "NONE";
+      $tableFlags = "0";
+      $indexFlags = "0";
+
+
+      return "
+	  class ha_{$lowname}: public handler
+{
+public:
+  ha_{$lowname}(handlerton *hton, TABLE_SHARE *table_arg);
+  ~ha_{$lowname}()
+  {}
+
+  const char *table_type() const 
+  { return \"$upname\"; }
+
+  const char *index_type(uint inx) 
+  { return \"$index\"; }
+
+  const char **bas_ext() const;
+
+  ulonglong table_flags() const 
+  { return $tableFlags; }
+
+  ulong index_flags(uint inx, uint part, bool all_parts) const 
+  { return $indexFlags; }
+
+  int open(const char *name, int mode, uint test_if_locked);    
+  int close(void);                                              
+  int rnd_init(bool scan);                                      
+  int rnd_next(byte *buf);                                      
+  int rnd_pos(byte * buf, byte *pos);                           
+  void position(const byte *record);                            
+  int info(uint);                                               
+  int create(const char *name, TABLE *form, HA_CREATE_INFO *create_info);                      
+  THR_LOCK_DATA **store_lock(THD *thd, THR_LOCK_DATA **to, enum thr_lock_type lock_type);
+};
+";
+    }
+
+  function getFunctionHead($name)
+  {
+    $classname = "ha_".strtolower($name);
+
+    switch ($name) {
+      case "bas_ext":
+        return "const char **{$classname}::bas_ext() const\n{\n";
+      case "open":
+        return "int {$classname}::open(const char *name, int mode, uint test_if_locked)\n{\n";    
+      case "close":
+        return "int {$classname}::close(void)\n{\n";                                              
+      case "rnd_init":
+        return "int {$classname}::rnd_init(bool scan)\n{\n";                                      
+      case "rnd_next":
+        return "int {$classname}::rnd_next(byte *buf)\n{\n";                                      
+      case "rnd_pos":
+        return "int {$classname}::rnd_pos(byte * buf, byte *pos)\n{\n";                           
+      case "position":
+        return "void {$classname}::position(const byte *record)\n{\n";                            
+      case "info":
+        return "int {$classname}::info(uint)\n{\n";                                               
+      case "create":
+        return "int {$classname}::create(const char *name, TABLE *form, HA_CREATE_INFO *create_info)\n{\n";
+      case "store_lock":
+        return "THR_LOCK_DATA **{$classname}::store_lock(THD *thd, THR_LOCK_DATA **to, enum thr_lock_type lock_type)\n{\n";
+      default:
+        return false;
+    }
+  }
+
+
+  function isValid()
+  {
+    foreach ($this->requiredFunctions as $function) {
+      if (!isset($this->functions[$function])) {
+        return PEAR::raiseError("required method '$function' not implemented in '{$this->name}'");
+      }
+    }
+
+    return true;
+  }
 }
+
