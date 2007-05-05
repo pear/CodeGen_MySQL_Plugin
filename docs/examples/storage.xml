@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<plugin name="storage">
+  <maintainer>
+    <name>Hartmut Holzgraefe</name>
+    <email>hartmut@mysql.com</email>
+  </maintainer>
+
+  <license>GPL</license>
+
+  <release>
+    <version>0.1</version>
+    <date>2004-05-25</date>
+    <state>beta</state>
+    <notes>
+     First working release
+    </notes>
+  </release>
+
+  <deps language="c++">
+   <src/>
+  </deps>
+
+  <storage name="storage_example">
+   <function name="create">
+     return 0;
+   </function>
+   <function name="open">
+     return 0;
+   </function>
+   <function name="close">
+     return 0;
+   </function>
+   <function name="rnd_init">
+     return HA_ERR_WRONG_COMMAND;
+   </function>
+   <function name="rnd_next">
+     return HA_ERR_END_OF_FILE;
+   </function>
+   <function name="position">
+     return;
+   </function>
+   <function name="rnd_pos">
+     return HA_ERR_WRONG_COMMAND;
+   </function>
+   <function name="info">
+     return 0;
+   </function>
+   <function name="store_lock">
+     return NULL;
+   </function>
+  </storage>
+
+</plugin>
