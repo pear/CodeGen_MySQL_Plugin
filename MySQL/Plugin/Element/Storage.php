@@ -60,17 +60,17 @@ class CodeGen_MySQL_Plugin_Element_Storage
     protected $functions = array();
 
 
-	protected $requiredFunctions = array("bas_ext", 
-										 "open", 
-										 "close", 
-										 "rnd_init", 
-										 "rnd_next", 
-										 "rnd_pos", 
-										 "position", 
-										 "info", 
-										 "create", 
-										 "store_lock"
-										 );
+    protected $requiredFunctions = array("bas_ext", 
+                                         "open", 
+                                         "close", 
+                                         "rnd_init", 
+                                         "rnd_next", 
+                                         "rnd_pos", 
+                                         "position", 
+                                         "info", 
+                                         "create", 
+                                         "store_lock"
+                                         );
 
     /**
      * Handler flags
@@ -114,7 +114,7 @@ class CodeGen_MySQL_Plugin_Element_Storage
      */
     function setFunction($name, $code)
     {
-    	$head = getFunctionHead($name);
+        $head = getFunctionHead($name);
 
         if (!$head) { 
             return PEAR::raiseError("'$name' is not a valid handler function");
@@ -123,7 +123,7 @@ class CodeGen_MySQL_Plugin_Element_Storage
         if (isset($this->functions[$name])) {
             return PEAR::raiseError("'$name' function declared twice");
         }
-		
+        
         $this->functions[$name] = array("head" => $head, "body" => $code);
 
         return true; 
@@ -204,7 +204,7 @@ class CodeGen_MySQL_Plugin_Element_Storage
       $lowname = strtolower($name);
       $upname  = strtoupper($name);
 
-	  $this->initPrefix = "  
+      $this->initPrefix = "  
   handlerton *{$lowname}_handlerton = (handlerton *)data;
   {$lowname}_handlerton->state=   SHOW_OPTION_YES;
   {$lowname}_handlerton->create=  {$lowname}_create_handler;
@@ -216,19 +216,19 @@ class CodeGen_MySQL_Plugin_Element_Storage
               $flags[] = $flag;
           }
       }
-	  if (count($flags)) {
-		$flags = join(" | ", $flags);
-	  } else {
-		$flags = "0";
-	  }
+      if (count($flags)) {
+        $flags = join(" | ", $flags);
+      } else {
+        $flags = "0";
+      }
       $this->initPrefix.= "  $flags;\n";
 
-	  $code = "
+      $code = "
 static handler* {$lowname}_create_handler(handlerton *hton,
                                        TABLE_SHARE *table,
                                        MEM_ROOT *mem_root)
 {
-	  return new (mem_root) ha_{$lowname}(hton, table);
+      return new (mem_root) ha_{$lowname}(hton, table);
 }
 ";
 
@@ -238,11 +238,11 @@ static handler* {$lowname}_create_handler(handlerton *hton,
 
       $code.= parent::getPluginCode()."\n";
 
-	  $code.= "struct st_mysql_storage_engine {$lowname}_descriptor=\n";
-	  $code.= "{ MYSQL_HANDLERTON_INTERFACE_VERSION };\n";
+      $code.= "struct st_mysql_storage_engine {$lowname}_descriptor=\n";
+      $code.= "{ MYSQL_HANDLERTON_INTERFACE_VERSION };\n";
 
 
-	  if (false) {
+      if (false) {
       $code.="handlerton {$lowname}_hton= {\n";
       $code.="  \"$upname\",\n";
       $code.="  SHOW_OPTION_YES,\n";
@@ -290,9 +290,9 @@ static handler* {$lowname}_create_handler(handlerton *hton,
       $code.="  ".$this->funcName("binlog_log_query").", /* */\n";
 
       $code.="};\n";
-	  }
+      }
 
-	  return $code;
+      return $code;
     }
 
 
@@ -309,7 +309,7 @@ static handler* {$lowname}_create_handler(handlerton *hton,
 
 
       return "
-	  class ha_{$lowname}: public handler
+      class ha_{$lowname}: public handler
 {
 public:
   ha_{$lowname}(handlerton *hton, TABLE_SHARE *table_arg);
