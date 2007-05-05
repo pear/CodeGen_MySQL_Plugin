@@ -128,6 +128,10 @@ class CodeGen_MySQL_Plugin_Extension
         echo "#ifndef MYPLUGIN_{$upname}_H\n";
         echo "#define MYPLUGIN_{$upname}_H\n\n";   
 
+        foreach ($this->plugins as $plugin) {
+            echo $plugin->getPluginHeader()."\n";
+        }
+
         echo "#endif /* MYPLUGIN_{$upname}_H */\n\n";
 
         return $file->write();
@@ -172,11 +176,12 @@ class CodeGen_MySQL_Plugin_Extension
             echo "#include <mysql_priv.h>\n";
         }
 
+        echo "#include \"myplugin_{$this->name}.h\"\n";
+
         foreach ($this->headers as $header) {
             echo $header->hCode(true);
         }
         
-        $declarations = array();
         foreach ($this->plugins as $plugin) {
             echo $plugin->getPluginCode()."\n";
             echo $plugin->getPluginRegistration($this);
@@ -269,6 +274,17 @@ This is a MySQL plugin generetad using CodeGen_Mysql_Plugin <?php echo self::ver
         return new CodeGen_MySQL_Plugin_Element_Test(); 
     }
 
+    function isValid() 
+    {
+        foreach ($this->plugins as $plugin) {
+            $err = $plugin->isValid();
+            if (PEAR::isError($err)) {
+                return $err;
+            }
+        }
+
+        return true;
+    }
 }   
 
 
