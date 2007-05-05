@@ -131,7 +131,7 @@ class CodeGen_MySQL_Plugin_Element_Storage
      */
     function setFunction($name, $code)
     {
-        $head = getFunctionHead($name);
+        $head = $this->getFunctionHead($name);
 
         if (!$head) { 
             return PEAR::raiseError("'$name' is not a valid handler function");
@@ -321,7 +321,7 @@ public:
 
   function getFunctionHead($name)
   {
-    $classname = "ha_".strtolower($name);
+    $classname = "ha_".strtolower($this->name);
 
     switch ($name) {
       case "open":
@@ -350,12 +350,22 @@ public:
 
   function isValid()
   {
+    $missing = array();
+
     foreach ($this->requiredFunctions as $function) {
       if (!isset($this->functions[$function])) {
-        return PEAR::raiseError("required method '$function' not implemented in '{$this->name}'");
+        $missing[] = $function;
       }
     }
 
+    if (count($missing)) {
+      return PEAR::raiseError(sprintf("required method%s '%s' not implemented in '%s'",
+                                      count($missing) >1 ? 's' : '',
+                                      join("', '", $missing),
+                                      $this->name
+                                     ));
+    } 
+      
     return true;
   }
 }
