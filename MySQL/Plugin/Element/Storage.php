@@ -247,6 +247,7 @@ static handler* {$lowname}_create_handler(handlerton *hton,
 {
       return new (mem_root) ha_{$lowname}(hton, table);
 }
+
 ";
 
       foreach ($this->functions as $name => $function) {
@@ -287,10 +288,10 @@ static handler* {$lowname}_create_handler(handlerton *hton,
       return "
       class ha_{$lowname}: public handler
 {
+  {$this->classExtra}
 public:
   ha_{$lowname}(handlerton *hton, TABLE_SHARE *table_arg);
-  ~ha_{$lowname}()
-  {}
+  ~ha_{$lowname}();
 
   const char *table_type() const 
   { return \"$upname\"; }
@@ -324,6 +325,10 @@ public:
     $classname = "ha_".strtolower($this->name);
 
     switch ($name) {
+      case "constructor":
+        return "{$classname}::{$classname}(handlerton *hton, TABLE_SHARE *table_arg)\n  :handler(hton, table_arg)\n{\n";
+      case "destructor":
+        return "{$classname}::~{$classname}()\n{\n";
       case "open":
         return "int {$classname}::open(const char *name, int mode, uint test_if_locked)\n{\n";    
       case "close":
@@ -365,8 +370,24 @@ public:
                                       $this->name
                                      ));
     } 
+
+	if (!isset($this->functions["constructor"])) {
+	  $this->setFunction("constructor","");																							 
+	}
+
+	if (!isset($this->functions["destructor"])) {
+	  $this->setFunction("destructor","");																							 
+	}
       
     return true;
   }
+
+
+    protected $classExtra = "";
+
+    function setClassExtra($code)
+    {
+        $this->classExtra = $code;
+    }
 }
 
