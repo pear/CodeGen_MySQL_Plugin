@@ -175,10 +175,15 @@ class CodeGen_MySQL_Plugin_Extension
         }
         
         echo "
+#ifdef HAVE_CONFIG_H
+#include \"config.h\"
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <my_global.h>
+
 // TODO configure should take care of this
 #ifdef DBUG_ON
 #define SAFEMALLOC
