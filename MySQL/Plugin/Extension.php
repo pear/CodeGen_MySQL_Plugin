@@ -128,10 +128,21 @@ class CodeGen_MySQL_Plugin_Extension
         echo "#ifndef MYPLUGIN_{$upname}_H\n";
         echo "#define MYPLUGIN_{$upname}_H\n\n";   
 
+        if (isset($this->code["header"]["top"])) {
+            foreach ($this->code["header"]["top"] as $code) {
+                echo $this->codegen->block($code, 0);
+            }
+        }
+
         foreach ($this->plugins as $plugin) {
             echo $plugin->getPluginHeader()."\n";
         }
 
+        if (isset($this->code["header"]["bottom"])) {
+            foreach ($this->code["header"]["bottom"] as $code) {
+                echo $this->codegen->block($code, 0);
+            }
+        }
         echo "#endif /* MYPLUGIN_{$upname}_H */\n\n";
 
         return $file->write();
@@ -182,11 +193,21 @@ class CodeGen_MySQL_Plugin_Extension
             echo $header->hCode(true);
         }
         
+        if (isset($this->code["code"]["top"])) {
+            foreach ($this->code["code"]["top"] as $code) {
+                echo $this->codegen->block($code, 0);
+            }
+        }
         foreach ($this->plugins as $plugin) {
             echo $plugin->getPluginCode()."\n";
             echo $plugin->getPluginRegistration($this);
         }
 
+        if (isset($this->code["code"]["bottom"])) {
+            foreach ($this->code["code"]["bottom"] as $code) {
+                echo $this->codegen->block($code, 0);
+            }
+        }
         echo $this->cCodeEditorSettings();
 
         return $file->write();
@@ -285,6 +306,7 @@ This is a MySQL plugin generetad using CodeGen_Mysql_Plugin <?php echo self::ver
 
         return true;
     }
+
 }   
 
 
