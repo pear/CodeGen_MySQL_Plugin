@@ -179,6 +179,12 @@ class CodeGen_MySQL_Plugin_Extension
 #include <string.h>
 #include <ctype.h>
 #include <my_global.h>
+// TODO configure should take care of this
+#ifdef DBUG_ON
+#define SAFEMALLOC
+#define PEDANTIC_SAFEMALLOC
+#define SAFE_MUTEX
+#endif
 #include <mysql_version.h>
 #include <mysql/plugin.h>
 ";
