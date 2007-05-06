@@ -148,6 +148,14 @@ class CodeGen_MySQL_Plugin_ExtensionParser
         return $this->tagend_extension_code($attr, $data);
     }
 
+    function tagend_plugin_acinclude($attr, $data) {
+        return $this->tagend_extension_acinclude($attr, $data);
+    }
+
+    function tagend_plugin_configure($attr, $data) {
+        return $this->tagend_deps_configm4($attr, $data);
+    }
+
     function tagstart_statusvar_statusvar($attr) {
         return $this->start_generic_statusvar($attr);
     }
@@ -335,6 +343,11 @@ class CodeGen_MySQL_Plugin_ExtensionParser
         }
 
         $this->helper->addFileExtension($attr["name"]);
+    }
+
+    function tagend_storage_class($attr, $data)
+    {
+        $this->helper->setClassExtra($data);
     }
 
     //  ___        __          ____       _                          
