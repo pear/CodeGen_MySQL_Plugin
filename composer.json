@@ -1,0 +1,29 @@
+{
+    "authors": [
+        {
+            "email": "hartmut@php.net",
+            "name": "Hartmut Holzgraefe",
+            "role": "Lead"
+        }
+    ],
+    "autoload": {
+        "classmap": [
+            "./"
+        ]
+    },
+    "description": "More info available on: http://pear.php.net/package/CodeGen_MySQL_Plugin",
+    "license": "PHP",
+    "name": "pear/codegen_mysql_plugin",
+    "support": {
+        "issues": "http://pear.php.net/bugs/search.php?cmd=display&package_name[]=CodeGen_MySQL_Plugin",
+        "source": "https://github.com/pear/CodeGen_MySQL_Plugin"
+    },
+    "type": "library",
+    "require": {
+        "pear/pear_exception": "*",
+        "pear/pear": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    }
+}
